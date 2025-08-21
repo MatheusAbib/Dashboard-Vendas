@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard de Vendas</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.29/jspdf.plugin.autotable.min.js"></script>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<header>
+  <h1>Dashboard de Vendas</h1>
+</header>
+
+<div id="mensagens" class="mensagens"></div>
+
+<main>
+  <!-- Cards de métricas -->
+<section class="cards" id="cards-metricas"></section>
+
+  <!-- Filtros -->
+  <section class="filtros">
+    <label>Data Inicial: <input type="date" id="data-inicial"></label>
+    <label>Data Final: <input type="date" id="data-final"></label>
+    <label>Categoria:
+      <select id="categoria">
+        <option value="">Todas</option>
+      </select>
+    </label>
+    <button onclick="carregarDashboard()">Aplicar Filtro</button>
+    <button onclick="exportarExcel()">⬇ Excel</button>
+    <button onclick="exportarPDF()">⬇ PDF</button>
+  </section>
+
+  <!-- Checkbox/Toggles para categorias -->
+  <section class="filtros-avancados">
+    <h3>Filtrar Séries no Gráfico</h3>
+    <div id="checkbox-categorias"></div>
+  </section>
+
+  <!-- Filtros geográficos -->
+  <section class="filtros-geograficos" id="filtros-geograficos">
+    <h3>Filtros Geográficos</h3>
+    <label>País: <select id="filtro-pais"><option value="">Todos</option></select></label>
+    <label>Estado: <select id="filtro-estado"><option value="">Todos</option></select></label>
+    <label>Cidade: <select id="filtro-cidade"><option value="">Todas</option></select></label>
+    <button onclick="aplicarFiltroGeografico()">Aplicar</button>
+  </section>
+
+  <!-- Gráficos -->
+<section class="graficos">
+  <div class="grafico-card">
+    <h2>Vendas por Produto</h2>
+    <canvas id="graficoBarras"></canvas>
+  </div>
+
+  <div class="grafico-card">
+    <h2>Vendas por Categoria</h2>
+    <canvas id="graficoPizza"></canvas>
+  </div>
+
+  <div class="grafico-card">
+    <h2>Mapa de Calor de Vendas</h2>
+    <canvas id="mapaCalor"></canvas>
+  </div>
+
+  <div class="grafico-card">
+    <h2>Mapa de Vendas</h2>
+    <div id="mapaVendas"></div>
+  </div>
+
+  <div class="grafico-card produtos-por-estado">
+    <h2>Produtos Mais Vendidos por Estado</h2>
+    <canvas id="graficoProdutosRegiao"></canvas>
+  </div>
+</section>
+
+
+
+  <!-- Ranking de produtos -->
+  <section class="ranking">
+    <h3>Ranking de Produtos</h3>
+    <ol id="ranking-produtos"></ol>
+  </section>
+
+  <!-- Tabela -->
+  <section class="tabela">
+    <h2>Vendas Registradas</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Produto</th>
+          <th>Categoria</th>
+          <th>Quantidade</th>
+          <th>Valor</th>
+          <th>Data</th>
+          <th>Cidade</th>
+          <th>Estado</th>
+          <th>País</th>
+        </tr>
+      </thead>
+      <tbody id="tabela-vendas"></tbody>
+    </table>
+  </section>
+</main>
+
+<script src="js/script.js"> </script>
+</body>
+</html>

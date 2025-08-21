@@ -1,0 +1,283 @@
+    /* Reset básico */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+  background-color: #f4f6f8;
+  color: #333;
+  line-height: 1.6;
+}
+
+header {
+  background-color: #4CAF50;
+  color: white;
+  padding: 20px 40px;
+  text-align: center;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+main {
+  padding: 20px 40px;
+}
+
+/* Mensagens */
+.mensagens {
+  position: fixed;
+  top: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 15px 25px;
+  border-radius: 5px;
+  font-weight: bold;
+  z-index: 1000;
+  display: none;
+}
+
+.mensagens.info { background-color: #2196F3; color: white; display: block;}
+.mensagens.sucesso { background-color: #4CAF50; color: white; display: block;}
+.mensagens.erro { background-color: #f44336; color: white; display: block; }
+
+/* Cards de métricas */
+.cards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  margin-bottom: 30px;
+}
+
+.card {
+  flex: 1 1 250px;
+  background-color: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  transition: transform 0.2s;
+  max-height: 150px;
+  overflow-y: auto;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+}
+
+.card h3 {
+  font-size: 1.1rem;
+  margin-bottom: 10px;
+}
+
+.card p {
+  font-size: 1rem;
+  color: #555;
+}
+
+/* Filtros */
+.filtros, .filtros-avancados, .filtros-geograficos {
+  background-color: white;
+  padding: 15px 20px;
+  margin-bottom: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  align-items: center;
+}
+
+.filtros label, .filtros-geograficos label {
+  display: flex;
+  flex-direction: column;
+  font-weight: bold;
+  font-size: 0.9rem;
+}
+
+.filtros button, .filtros-geograficos button {
+  padding: 8px 15px;
+  border: none;
+  background-color: #4CAF50;
+  color: white;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.filtros button:hover, .filtros-geograficos button:hover {
+  background-color: #45a049;
+}
+
+.filtros-avancados h3 {
+  width: 100%;
+  margin-bottom: 10px;
+}
+
+#checkbox-categorias label {
+  margin-right: 10px;
+  font-weight: normal;
+}
+
+/* Gráficos */
+.graficos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  margin-bottom: 30px;
+  justify-content: flex-start;
+}
+
+/* Card padrão */
+.grafico-card {
+  padding: 25px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  height: 400px; 
+  flex: 1 1 calc(50% - 10px); 
+  min-width: 300px; 
+  position: relative;
+}
+
+/* Card Produtos Mais Vendidos por Estado - maior */
+.grafico-card.produtos-por-estado {
+  flex: 1 1 100%; 
+  height: 500px; 
+}
+
+/* Canvas e mapa sempre ocupam o card */
+.grafico-card canvas,
+.grafico-card div#mapaVendas {
+  height: 100% !important;
+  object-fit: contain;
+}
+
+/* Responsividade */
+@media (max-width: 1024px) {
+  .grafico-card {
+    flex: 1 1 100%;
+    height: 400px;
+  }
+
+  .grafico-card.produtos-por-estado {
+    height: 450px;
+  }
+}
+
+/* Botões e selects geográficos */
+.filtros-geograficos label {
+  flex: 1 1 auto;
+  min-width: 150px;
+  margin-bottom: 10px;
+}
+
+.filtros-geograficos button {
+  flex-shrink: 0;
+  margin-top: 10px;
+}
+
+
+
+/* Ranking */
+.ranking {
+  background-color: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  margin-bottom: 30px;
+  max-height: 250px;
+  overflow-y: auto;
+}
+
+.ranking ol {
+  padding-left: 20px;
+}
+
+.ranking li {
+  padding: 5px 0;
+  border-bottom: 1px solid #eee;
+}
+
+/* Tabela */
+.tabela {
+  background-color: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  max-height: 400px; 
+  overflow-y: auto; 
+  overflow-x: auto;
+}
+
+.tabela table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.tabela thead {
+  position: sticky;
+  top: 0;
+  background-color: #f2f2f2;
+  z-index: 2;
+}
+
+.tabela th, .tabela td {
+  text-align: left;
+  padding: 10px;
+  border-bottom: 1px solid #ddd;
+}
+
+.tabela tr:hover {
+  background-color: #f1f1f1;
+}
+
+/* Scrollbar personalizada para a tabela */
+.tabela::-webkit-scrollbar {
+  width: 8px;
+}
+
+.tabela::-webkit-scrollbar-thumb {
+  background-color: rgba(0,0,0,0.2);
+  border-radius: 4px;
+}
+
+.tabela::-webkit-scrollbar-track {
+  background-color: #f1f1f1;
+  border-radius: 4px;
+}
+
+
+/* Scrollbar personalizada */
+.card::-webkit-scrollbar,
+.ranking::-webkit-scrollbar {
+  width: 8px;
+}
+
+.card::-webkit-scrollbar-thumb,
+.ranking::-webkit-scrollbar-thumb {
+  background-color: rgba(0,0,0,0.2);
+  border-radius: 4px;
+}
+
+.card::-webkit-scrollbar-track,
+.ranking::-webkit-scrollbar-track {
+  background-color: #f1f1f1;
+  border-radius: 4px;
+}
+
+
+/* Responsividade */
+@media (max-width: 768px) {
+  .cards {
+    flex-direction: column;
+  }
+
+  .grafico-card {
+    flex: 1 1 100%; /* 1 por linha */
+  }
+
+  .filtros, .filtros-geograficos, .filtros-avancados {
+    flex-direction: column;
+    gap: 10px;
+  }
+}

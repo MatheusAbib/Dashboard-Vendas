@@ -34,7 +34,11 @@ async function carregarDashboard() {
 function preencherTabela(vendas) {
   const tbody = document.getElementById("tabela-vendas");
   tbody.innerHTML = "";
+
   vendas.forEach(v => {
+    // Formata a data para YYYY-MM-DD
+    const dataVendaFormatada = v.dataVenda ? v.dataVenda.split("T")[0] : "-";
+
     tbody.innerHTML += `
       <tr>
         <td>${v.id}</td>
@@ -42,13 +46,36 @@ function preencherTabela(vendas) {
         <td>${v.categoria}</td>
         <td>${v.quantidade}</td>
         <td>R$ ${v.valor.toFixed(2)}</td>
-        <td>${v.dataVenda}</td>
         <td>${v.cidade || '-'}</td>
         <td>${v.estado || '-'}</td>
-        <td>${v.pais || '-'}</td>
+        <td>${v.cep || '-'}</td>
+        <td>${dataVendaFormatada}</td>
+        <td>
+          <button class="btn-acao editar" onclick='abrirFormVenda(${JSON.stringify(v)})'>
+            <i class="fas fa-edit"></i>
+          </button>
+          <button class="btn-acao excluir" onclick='deletarVenda(${v.id})'>
+            <i class="fas fa-trash"></i>
+          </button>
+        </td>
       </tr>`;
   });
 }
+
+
+async function deletarVenda(id) {
+  if (!confirm("Tem certeza que deseja excluir esta venda?")) return;
+  
+  const resp = await fetch(`${API_URL}/${id}`, { method: "DELETE" });
+  if (resp.ok) {
+    mostrarMensagem("Venda deletada com sucesso!", "sucesso");
+    carregarDashboard();
+  } else {
+    mostrarMensagem("Erro ao deletar venda", "erro");
+  }
+}
+
+
 
 function preencherCards(vendas) {
   const containerGeral = document.getElementById("cards-metricas");
@@ -264,7 +291,6 @@ function preencherGraficoProdutosRegiao(vendas) {
   });
 }
 
-
 // Mensagens
 function mostrarMensagem(texto, tipo="info") {
   const div = document.getElementById("mensagens");
@@ -274,62 +300,299 @@ function mostrarMensagem(texto, tipo="info") {
 }
 
 // Exportações
-function exportarExcel() { window.location.href = API_URL + "/export/excel"; }
+async function exportarExcel() {
+  const vendas = todasVendas; 
+  if (!vendas.length) {
+    alert("Nenhuma venda para exportar!");
+    return;
+  }
+
+  // Criar workbook e planilha
+  const wb = XLSX.utils.book_new();
+  const wsData = [];
+
+  // Adicionar cards resumidos no topo
+  const cards = [
+    { title: "Total Vendas", value: document.querySelector("#cards-metricas div:nth-child(1) p").innerText },
+    { title: "Total Produtos", value: document.querySelector("#cards-metricas div:nth-child(2) p").innerText },
+    { title: "Ticket Médio", value: document.querySelector("#cards-metricas div:nth-child(3) p").innerText },
+    { title: "Categoria Mais Vendida", value: document.querySelector("#cards-metricas div:nth-child(4) p").innerText }
+  ];
+  
+  wsData.push(cards.map(c => c.title));
+  wsData.push(cards.map(c => c.value));
+  wsData.push([]); // linha em branco
+
+  // Cabeçalho da tabela
+  const headers = ["ID", "Produto", "Categoria", "Quantidade", "Valor (R$)", "Cidade", "Estado", "CEP", "Data Venda"];
+  wsData.push(headers);
+
+  // Linhas de vendas
+  vendas.forEach(v => {
+    wsData.push([
+      v.id,
+      v.produto,
+      v.categoria,
+      v.quantidade,
+      v.valor,
+      v.cidade || '-',
+      v.estado || '-',
+      v.cep || '-',
+      v.dataVenda ? v.dataVenda.split('T')[0] : '-'
+    ]);
+  });
+
+  // Criar worksheet
+  const ws = XLSX.utils.aoa_to_sheet(wsData);
+
+  // Ajustar largura das colunas
+  ws['!cols'] = [
+    { wpx: 80 },  // ID
+    { wpx: 150 }, // Produto
+    { wpx: 95 }, // Categoria
+    { wpx: 80 },  // Quantidade
+    { wpx: 80 },  // Valor
+    { wpx: 110 }, // Cidade
+    { wpx: 60 },  // Estado
+    { wpx: 70 }, // CEP
+    { wpx: 70 }  // Data
+  ];
+
+  // Adicionar planilha ao workbook
+  XLSX.utils.book_append_sheet(wb, ws, "Dashboard");
+
+  // Gerar arquivo e baixar
+  XLSX.writeFile(wb, "dashboard_vendas.xlsx");
+}
+
 function exportarPDF() {
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF('p', 'pt', 'a4'); 
-  let y = 30;
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const pageHeight = doc.internal.pageSize.getHeight();
 
-  doc.setFontSize(18);
-  doc.text("Dashboard de Vendas", 40, y);
-  y += 20;
+  // Função para desenhar cabeçalho
+  function cabecalho() {
+    doc.setFillColor(52, 152, 219); // azul do cabeçalho
+    doc.rect(0, 0, pageWidth, 50, 'F'); 
+    doc.setFontSize(18);
+    doc.setTextColor(255, 255, 255); // branco
+    doc.text("Dashboard de Vendas", pageWidth / 2, 30, { align: "center" });
+  }
 
-  const barrasImg = document.getElementById("graficoBarras").toDataURL("image/png", 1.0);
-  doc.addImage(barrasImg, 'PNG', 40, y, 500, 250); y += 270;
-  const pizzaImg = document.getElementById("graficoPizza").toDataURL("image/png", 1.0);
-  doc.addImage(pizzaImg, 'PNG', 40, y, 500, 250); y += 270;
+  // Função para desenhar rodapé
+  function rodape(paginaAtual, totalPaginas) {
+    doc.setFillColor(52, 73, 94); // cinza escuro
+    doc.rect(0, pageHeight - 30, pageWidth, 30, 'F');
+    doc.setFontSize(10);
+    doc.setTextColor(255, 255, 255);
+    doc.text(`Página ${paginaAtual} de ${totalPaginas}`, pageWidth / 2, pageHeight - 12, { align: "center" });
+  }
+
+  let y = 70;
+  cabecalho();
+
+  // Cards resumidos com cores
+  const cards = [
+    { title: "Total Vendas", value: document.querySelector("#cards-metricas div:nth-child(1) p").innerText, color: [46, 204, 113] },
+    { title: "Total Produtos", value: document.querySelector("#cards-metricas div:nth-child(2) p").innerText, color: [231, 76, 60] },
+    { title: "Ticket Médio", value: document.querySelector("#cards-metricas div:nth-child(3) p").innerText, color: [241, 196, 15] },
+    { title: "Categoria Mais Vendida", value: document.querySelector("#cards-metricas div:nth-child(4) p").innerText, color: [52, 152, 219] }
+  ];
+
+  const cardWidth = (pageWidth - 80) / 4; // espaço entre os cards
+  const cardHeight = 50;
+
+  cards.forEach((c, i) => {
+    const x = 40 + i * cardWidth;
+    doc.setFillColor(...c.color);
+    doc.roundedRect(x, y, cardWidth - 10, cardHeight, 5, 5, 'F'); // fundo colorido
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(10);
+    doc.text(c.title, x + 5, y + 15);
+    doc.setFontSize(12);
+    doc.text(c.value, x + 5, y + 35);
+  });
+  y += cardHeight + 20;
+
+  // Gráficos lado a lado
+  const graficoBarrasImg = document.getElementById("graficoBarras").toDataURL("image/png", 1.0);
+  const graficoPizzaImg = document.getElementById("graficoPizza").toDataURL("image/png", 1.0);
+  doc.addImage(graficoBarrasImg, 'PNG', 40, y, 250, 200);
+  doc.addImage(graficoPizzaImg, 'PNG', 300, y, 250, 200);
+  y += 220;
+
+  // Gráficos abaixo
   const calorImg = document.getElementById("mapaCalor").toDataURL("image/png", 1.0);
-  doc.addImage(calorImg, 'PNG', 40, y, 500, 250); y += 270;
+  const produtosRegiaoImg = document.getElementById("graficoProdutosRegiao").toDataURL("image/png", 1.0);
+  doc.addImage(calorImg, 'PNG', 40, y, 250, 200);
+  doc.addImage(produtosRegiaoImg, 'PNG', 300, y, 250, 200);
+  y += 220;
 
+  // Tabela de vendas
   if (typeof doc.autoTable === "function") {
-    doc.autoTable({ html: '#tabela-vendas', startY: y, theme:'grid', headStyles:{fillColor:[52,73,94],textColor:255} });
-  } else { alert("Erro: jsPDF AutoTable não carregado corretamente!"); return; }
+    doc.addPage();
+    cabecalho();
+    const totalPaginas = doc.internal.getNumberOfPages();
+    doc.autoTable({ 
+      html: '#tabela-vendas', 
+      startY: 70, 
+      theme: 'grid', 
+      headStyles: { fillColor:[52,73,94], textColor:255 },
+      styles: { fontSize: 9, cellPadding: 2 },
+      didDrawPage: function (data) {
+        const paginaAtual = doc.internal.getCurrentPageInfo().pageNumber;
+        rodape(paginaAtual, totalPaginas);
+      }
+    });
+  } else { 
+    alert("Erro: jsPDF AutoTable não carregado corretamente!"); 
+    return; 
+  }
+
+  // Rodapé na primeira página
+  rodape(1, doc.internal.getNumberOfPages());
 
   doc.save("dashboard_completo.pdf");
 }
 
-function preencherMapaVendas(vendas) {
-  const mapaDiv = document.getElementById("mapaVendas");
-  mapaDiv.innerHTML = ""; // limpa mapa antigo
 
-  // Se o mapa já existia, destruímos antes
-  if (mapaVendasMapa) {
-    mapaVendasMapa.remove();
+
+function preencherMapaVendas(vendas) {
+    const mapa = document.getElementById("mapaVendas");
+    // Exemplo usando Leaflet
+    const map = L.map(mapa).setView([-23.5505, -46.6333], 5); // Brasil central
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: 'Map data © OpenStreetMap contributors'
+    }).addTo(map);
+
+    vendas.forEach(v => {
+        if (v.latitude && v.longitude) {
+            L.marker([v.latitude, v.longitude])
+             .addTo(map)
+             .bindPopup(`${v.produto} - ${v.cidade} - R$${v.valor}`);
+        }
+    });
+}
+
+
+
+// Abre modal de cadastro
+function abrirFormVenda(venda = null) {
+  document.getElementById("formVendaModal").style.display = "flex";
+  const form = document.getElementById("formVenda");
+
+  if (venda) {
+    document.getElementById("formTitulo").innerText = "Editar Venda";
+    document.getElementById("venda-id").value = venda.id;
+    document.getElementById("produto").value = venda.produto;
+    document.getElementById("categoriaForm").value = venda.categoria;
+    document.getElementById("quantidade").value = venda.quantidade;
+    document.getElementById("valor").value = venda.valor;
+    document.getElementById("dataVenda").value = venda.dataVenda;
+    document.getElementById("cidade").value = venda.cidade || "";
+    document.getElementById("estado").value = venda.estado || "";
+    document.getElementById("pais").value = venda.pais || "";
+    document.getElementById("cep").value = venda.cep || "";
+
+  } else {
+    form.reset();
+    document.getElementById("venda-id").value = "";
+    document.getElementById("formTitulo").innerText = "Cadastrar Venda";
+  }
+}
+
+function fecharFormVenda() {
+  document.getElementById("formVendaModal").style.display = "none";
+}
+
+document.getElementById("formVenda").addEventListener("submit", async function(e) {
+  e.preventDefault();
+
+  const id = document.getElementById("venda-id").value;
+
+  // Pega a hora atual UTC
+  const agora = new Date();
+  // Converte para horário de Brasília (GMT-3)
+  const brasil = new Date(agora.getTime() - 3*60*60*1000);
+
+  const ano = brasil.getUTCFullYear();
+  const mes = String(brasil.getUTCMonth() + 1).padStart(2, '0');
+  const dia = String(brasil.getUTCDate()).padStart(2, '0');
+  const hora = String(brasil.getUTCHours()).padStart(2, '0');
+  const min = String(brasil.getUTCMinutes()).padStart(2, '0');
+  const seg = String(brasil.getUTCSeconds()).padStart(2, '0');
+
+  const dataFormatada = `${ano}-${mes}-${dia}T${hora}:${min}:${seg}`;
+
+  const venda = {
+      produto: document.getElementById("produto").value,
+      categoria: document.getElementById("categoriaForm").value,
+      quantidade: parseInt(document.getElementById("quantidade").value),
+      valor: parseFloat(document.getElementById("valor").value),
+      cidade: document.getElementById("cidade").value,
+      estado: document.getElementById("estado").value,
+      pais: document.getElementById("pais").value,
+      cep: document.getElementById("cep").value,
+      latitude: null,
+      longitude: null,
+      dataVenda: dataFormatada
+  };
+
+  const metodo = id ? "PUT" : "POST";
+  const url = id ? `${API_URL}/${id}` : API_URL;
+
+  const resp = await fetch(url, {
+    method: metodo,
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(venda)
+  });
+
+  if (resp.ok) {
+    mostrarMensagem("Venda salva com sucesso!", "sucesso");
+    fecharFormVenda();
+    carregarDashboard();
+  } else {
+    mostrarMensagem("Erro ao salvar venda", "erro");
+    const text = await resp.text();
+    console.error("Erro:", text);
+  }
+});
+
+
+async function obterCoordenadasPorCEP(cep) {
+  if (!cep) return null;
+
+  cep = cep.replace(/\D/g,''); // remove qualquer caractere não numérico
+
+  const url = `https://nominatim.openstreetmap.org/search?q=${cep},Brasil&format=json`;
+
+  try {
+    const resposta = await fetch(url, {
+      headers: { 'User-Agent': 'Dashboard-Vendas/1.0' }
+    });
+    const dados = await resposta.json();
+    if (dados.length > 0) {
+      return [parseFloat(dados[0].lat), parseFloat(dados[0].lon)];
+    }
+  } catch (err) {
+    console.error("Erro ao obter coordenadas:", err);
   }
 
-  // Cria o mapa novamente
-  mapaVendasMapa = L.map("mapaVendas").setView([-23.5505, -46.6333], 4); // centraliza no Brasil
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '&copy; OpenStreetMap contributors'
-  }).addTo(mapaVendasMapa);
-
-  // Adiciona os markers
-  vendas.forEach(v => {
-    if (v.latitude && v.longitude) {
-      L.marker([v.latitude, v.longitude])
-        .addTo(mapaVendasMapa)
-        .bindPopup(`
-          <b>${v.produto}</b><br>
-          Valor: R$ ${v.valor.toFixed(2)}<br>
-          Quantidade: ${v.quantidade}<br>
-          Data: ${v.dataVenda}<br>
-          Cidade: ${v.cidade || '-'}<br>
-          Estado: ${v.estado || '-'}<br>
-          País: ${v.pais || '-'}
-        `);
-    }
-  });
+  return null;
 }
+
+
+function limparFiltros() {
+  document.getElementById('data-inicial').value = '';
+  document.getElementById('data-final').value = '';
+  document.getElementById('categoria').value = '';
+
+  // Se quiser, já recarrega o dashboard sem filtros
+  carregarDashboard();
+}
+
 
 // Inicialização
 carregarDashboard();

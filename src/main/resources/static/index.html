@@ -4,92 +4,219 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Dashboard de Vendas</title>
+  
+  <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.29/jspdf.plugin.autotable.min.js"></script>
+  
+  
+  
+  <!-- Leaflet -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+  <!-- Bootstrap Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+  
+  <!-- Font Awesome 6 -->
+  <link rel="stylesheet" href="https://cdnjs.cloud.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
   <link rel="stylesheet" href="css/style.css">
+  
 </head>
 <body>
+
 <header>
-  <h1>Dashboard de Vendas</h1>
+  <h1><i class="bi bi-bar-chart-fill"></i> Dashboard de Vendas</h1>
+  
+  <div class="header-buttons">
+    <button onclick="abrirFormVenda()" class="btn-add">
+      <i class="bi bi-plus-circle"></i> Nova Venda
+    </button>
+    
+    <button onclick="exportarExcel()" class="btn-add">
+      <i class="bi bi-file-earmark-excel"></i> Exportar Excel
+    </button>
+    
+    <button onclick="exportarPDF()" class="btn-add">
+      <i class="bi bi-file-earmark-pdf"></i> Exportar PDF
+    </button>
+  </div>
 </header>
 
 <div id="mensagens" class="mensagens"></div>
 
 <main>
   <!-- Cards de métricas -->
-<section class="cards" id="cards-metricas"></section>
+  <section class="cards" id="cards-metricas"></section>
 
-  <!-- Filtros -->
-  <section class="filtros">
-    <label>Data Inicial: <input type="date" id="data-inicial"></label>
-    <label>Data Final: <input type="date" id="data-final"></label>
-    <label>Categoria:
-      <select id="categoria">
-        <option value="">Todas</option>
-      </select>
-    </label>
-    <button onclick="carregarDashboard()">Aplicar Filtro</button>
-    <button onclick="exportarExcel()">⬇ Excel</button>
-    <button onclick="exportarPDF()">⬇ PDF</button>
+  <!-- Filtros principais -->
+  <section class="filtros-section">
+    <h3><i class="bi bi-funnel"></i> Filtros Principais</h3>
+    <div class="filtros-row">
+      <div class="filtro-group">
+        <label for="data-inicial">Data Inicial</label>
+        <input type="date" id="data-inicial">
+      </div>
+      
+      <div class="filtro-group">
+        <label for="data-final">Data Final</label>
+        <input type="date" id="data-final">
+      </div>
+      
+      <div class="filtro-group">
+        <label for="categoria">Categoria</label>
+        <select id="categoria">
+          <option value="">Todas as categorias</option>
+        </select>
+      </div>
+      
+      <button onclick="carregarDashboard()">
+        <i class="bi bi-funnel"></i> Aplicar Filtros
+      </button>
+      
+      <button onclick="limparFiltros()">
+        <i class="bi bi-x-circle"></i> Limpar
+      </button>
+    </div>
   </section>
 
-  <!-- Checkbox/Toggles para categorias -->
-  <section class="filtros-avancados">
-    <h3>Filtrar Séries no Gráfico</h3>
-    <div id="checkbox-categorias"></div>
+  <!-- Modal Formulário de Venda -->
+<div id="formVendaModal" class="modal" style="display:none;">
+  <div class="modal-content">
+    <span class="close" onclick="fecharFormVenda()">&times;</span>
+    <h2><i class="bi bi-cart-plus"></i> <span id="formTitulo">Cadastrar Venda</span></h2>
+    <form id="formVenda">
+      <input type="hidden" id="venda-id">
+      
+      <!-- Primeira linha: Produto, Categoria, Quantidade -->
+      <div class="form-row">
+        <div class="form-group">
+          <label for="produto">Produto</label>
+          <input type="text" id="produto" required>
+        </div>
+        <div class="form-group">
+          <label for="categoriaForm">Categoria</label>
+          <input type="text" id="categoriaForm" required>
+        </div>
+        <div class="form-group">
+          <label for="quantidade">Quantidade</label>
+          <input type="number" id="quantidade" required>
+        </div>
+        <div class="form-group">
+          <label for="valor">Valor (R$)</label>
+          <input type="number" step="0.01" id="valor" required>
+        </div>
+
+      </div>
+      
+      <!-- Segunda linha: Valor, Data, Cidade -->
+      <div class="form-row">
+        <div class="form-group">
+          <label for="cidade">Cidade</label>
+          <input type="text" id="cidade">
+        </div>
+        <div class="form-group">
+          <label for="estado">Estado</label>
+          <input type="text" id="estado">
+        </div>
+        <div class="form-group">
+          <label for="pais">País</label>
+          <input type="text" id="pais">
+        </div>
+        <div class="form-group">
+          <label for="cep">CEP</label>
+          <input type="text" id="cep" required>
+        </div>
+      </div>
+      
+ 
+
+      <button type="submit">Salvar Venda</button>
+    </form>
+  </div>
+</div>
+
+  <!-- Filtros de categorias para gráficos -->
+  <section class="filtros-section">
+    <h3><i class="bi bi-graph-up"></i> Filtrar Séries no Gráfico</h3>
+    <div class="checkbox-container" id="checkbox-categorias"></div>
   </section>
 
   <!-- Filtros geográficos -->
-  <section class="filtros-geograficos" id="filtros-geograficos">
-    <h3>Filtros Geográficos</h3>
-    <label>País: <select id="filtro-pais"><option value="">Todos</option></select></label>
-    <label>Estado: <select id="filtro-estado"><option value="">Todos</option></select></label>
-    <label>Cidade: <select id="filtro-cidade"><option value="">Todas</option></select></label>
-    <button onclick="aplicarFiltroGeografico()">Aplicar</button>
+  <section class="filtros-section" id="filtros-geograficos">
+    <h3><i class="bi bi-geo-alt"></i> Filtros Geográficos</h3>
+    <div class="filtros-row">
+      <div class="filtro-group">
+        <label for="filtro-pais">País</label>
+        <select id="filtro-pais">
+          <option value="">Todos os países</option>
+        </select>
+      </div>
+      
+      <div class="filtro-group">
+        <label for="filtro-estado">Estado</label>
+        <select id="filtro-estado">
+          <option value="">Todos os estados</option>
+        </select>
+      </div>
+      
+      <div class="filtro-group">
+        <label for="filtro-cidade">Cidade</label>
+        <select id="filtro-cidade">
+          <option value="">Todas as cidades</option>
+        </select>
+      </div>
+      
+      <button onclick="aplicarFiltroGeografico()">
+        <i class="bi bi-funnel"></i> Aplicar
+      </button>
+      
+      <button onclick="limparFiltros()">
+        <i class="bi bi-x-circle"></i> Limpar
+      </button>
+    </div>
   </section>
 
   <!-- Gráficos -->
-<section class="graficos">
-  <div class="grafico-card">
-    <h2>Vendas por Produto</h2>
-    <canvas id="graficoBarras"></canvas>
-  </div>
+  <section class="graficos">
+    <div class="grafico-card">
+      <h2>Vendas por Produto</h2>
+      <canvas id="graficoBarras"></canvas>
+    </div>
 
-  <div class="grafico-card">
-    <h2>Vendas por Categoria</h2>
-    <canvas id="graficoPizza"></canvas>
-  </div>
+    <div class="grafico-card">
+      <h2>Vendas por Categoria</h2>
+      <canvas id="graficoPizza"></canvas>
+    </div>
 
-  <div class="grafico-card">
-    <h2>Mapa de Calor de Vendas</h2>
-    <canvas id="mapaCalor"></canvas>
-  </div>
+    <div class="grafico-card">
+      <h2>Mapa de Calor de Vendas</h2>
+      <canvas id="mapaCalor"></canvas>
+    </div>
 
-  <div class="grafico-card">
-    <h2>Mapa de Vendas</h2>
-    <div id="mapaVendas"></div>
-  </div>
+    <div class="grafico-card">
+      <h2>Mapa de Vendas</h2>
+      <div id="mapaVendas"></div>
+    </div>
 
-  <div class="grafico-card produtos-por-estado">
-    <h2>Produtos Mais Vendidos por Estado</h2>
-    <canvas id="graficoProdutosRegiao"></canvas>
-  </div>
-</section>
-
-
+    <div class="grafico-card produtos-por-estado">
+      <h2>Produtos Mais Vendidos por Estado</h2>
+      <canvas id="graficoProdutosRegiao"></canvas>
+    </div>
+  </section>
 
   <!-- Ranking de produtos -->
   <section class="ranking">
-    <h3>Ranking de Produtos</h3>
+    <h3><i class="bi bi-trophy"></i> Ranking de Produtos</h3>
     <ol id="ranking-produtos"></ol>
   </section>
 
   <!-- Tabela -->
   <section class="tabela">
-    <h2>Vendas Registradas</h2>
+    <h2><i class="bi bi-table"></i> Vendas Registradas</h2>
     <table>
       <thead>
         <tr>
@@ -98,10 +225,10 @@
           <th>Categoria</th>
           <th>Quantidade</th>
           <th>Valor</th>
-          <th>Data</th>
           <th>Cidade</th>
           <th>Estado</th>
-          <th>País</th>
+          <th>CEP</th>
+          <th>Ações</th>
         </tr>
       </thead>
       <tbody id="tabela-vendas"></tbody>
@@ -109,6 +236,9 @@
   </section>
 </main>
 
-<script src="js/script.js"> </script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+
+<script src="js/script.js"></script>
+
 </body>
 </html>

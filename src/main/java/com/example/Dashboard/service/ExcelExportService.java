@@ -35,7 +35,6 @@ public class ExcelExportService {
                 row.createCell(2).setCellValue(v.getCategoria());
                 row.createCell(3).setCellValue(v.getQuantidade());
                 row.createCell(4).setCellValue(v.getValor());
-                row.createCell(5).setCellValue(v.getDataVenda().toString());
             }
 
             workbook.write(out);

@@ -5,26 +5,20 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Dashboard de Vendas</title>
   
-  <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.29/jspdf.plugin.autotable.min.js"></script>
   
-  
-  
-  <!-- Leaflet -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
-  <!-- Bootstrap Icons -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
   
-  <!-- Font Awesome 6 -->
   <link rel="stylesheet" href="https://cdnjs.cloud.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-
-  <link rel="stylesheet" href="css/style.css">
   
+  <link rel="stylesheet" href="css/style.css">
+
 </head>
 <body>
 
@@ -48,194 +42,253 @@
 
 <div id="mensagens" class="mensagens"></div>
 
-<main>
-  <!-- Cards de métricas -->
-  <section class="cards" id="cards-metricas"></section>
-
-  <!-- Filtros principais -->
-  <section class="filtros-section">
-    <h3><i class="bi bi-funnel"></i> Filtros Principais</h3>
-    <div class="filtros-row">
+<div class="dashboard-layout">
+  <aside class="sidebar-filtros">
+    <div class="sidebar-header">
+      <h3><i class="bi bi-filter"></i> Filtros</h3>
+    </div>
+    
+    <div class="sidebar-content">
       <div class="filtro-group">
-        <label for="data-inicial">Data Inicial</label>
+        <label for="data-inicial"><i class="bi bi-calendar"></i> Data Inicial</label>
         <input type="date" id="data-inicial">
       </div>
       
       <div class="filtro-group">
-        <label for="data-final">Data Final</label>
+        <label for="data-final"><i class="bi bi-calendar"></i> Data Final</label>
         <input type="date" id="data-final">
       </div>
       
       <div class="filtro-group">
-        <label for="categoria">Categoria</label>
+        <label for="categoria"><i class="bi bi-tags"></i> Categoria</label>
         <select id="categoria">
           <option value="">Todas as categorias</option>
         </select>
       </div>
       
-      <button onclick="carregarDashboard()">
-        <i class="bi bi-funnel"></i> Aplicar Filtros
-      </button>
-      
-      <button onclick="limparFiltros()">
-        <i class="bi bi-x-circle"></i> Limpar
-      </button>
-    </div>
-  </section>
-
-  <!-- Modal Formulário de Venda -->
-<div id="formVendaModal" class="modal" style="display:none;">
-  <div class="modal-content">
-    <span class="close" onclick="fecharFormVenda()">&times;</span>
-    <h2><i class="bi bi-cart-plus"></i> <span id="formTitulo">Cadastrar Venda</span></h2>
-    <form id="formVenda">
-      <input type="hidden" id="venda-id">
-      
-      <!-- Primeira linha: Produto, Categoria, Quantidade -->
-      <div class="form-row">
-        <div class="form-group">
-          <label for="produto">Produto</label>
-          <input type="text" id="produto" required>
-        </div>
-        <div class="form-group">
-          <label for="categoriaForm">Categoria</label>
-          <input type="text" id="categoriaForm" required>
-        </div>
-        <div class="form-group">
-          <label for="quantidade">Quantidade</label>
-          <input type="number" id="quantidade" required>
-        </div>
-        <div class="form-group">
-          <label for="valor">Valor (R$)</label>
-          <input type="number" step="0.01" id="valor" required>
-        </div>
-
-      </div>
-      
-      <!-- Segunda linha: Valor, Data, Cidade -->
-      <div class="form-row">
-        <div class="form-group">
-          <label for="cidade">Cidade</label>
-          <input type="text" id="cidade">
-        </div>
-        <div class="form-group">
-          <label for="estado">Estado</label>
-          <input type="text" id="estado">
-        </div>
-        <div class="form-group">
-          <label for="pais">País</label>
-          <input type="text" id="pais">
-        </div>
-        <div class="form-group">
-          <label for="cep">CEP</label>
-          <input type="text" id="cep" required>
-        </div>
-      </div>
-      
- 
-
-      <button type="submit">Salvar Venda</button>
-    </form>
-  </div>
-</div>
-
-  <!-- Filtros de categorias para gráficos -->
-  <section class="filtros-section">
-    <h3><i class="bi bi-graph-up"></i> Filtrar Séries no Gráfico</h3>
-    <div class="checkbox-container" id="checkbox-categorias"></div>
-  </section>
-
-  <!-- Filtros geográficos -->
-  <section class="filtros-section" id="filtros-geograficos">
-    <h3><i class="bi bi-geo-alt"></i> Filtros Geográficos</h3>
-    <div class="filtros-row">
       <div class="filtro-group">
-        <label for="filtro-pais">País</label>
+        <label for="filtro-pais"><i class="bi bi-globe"></i> País</label>
         <select id="filtro-pais">
           <option value="">Todos os países</option>
         </select>
       </div>
       
       <div class="filtro-group">
-        <label for="filtro-estado">Estado</label>
+        <label for="filtro-estado"><i class="bi bi-geo-alt"></i> Estado</label>
         <select id="filtro-estado">
           <option value="">Todos os estados</option>
         </select>
       </div>
       
       <div class="filtro-group">
-        <label for="filtro-cidade">Cidade</label>
+        <label for="filtro-cidade"><i class="bi bi-buildings"></i> Cidade</label>
         <select id="filtro-cidade">
           <option value="">Todas as cidades</option>
         </select>
       </div>
       
-      <button onclick="aplicarFiltroGeografico()">
-        <i class="bi bi-funnel"></i> Aplicar
-      </button>
+      <div class="filtro-group series" style="display: none;">
+        <label><i class="bi bi-graph-up"></i> Filtrar Séries</label>
+        <div class="checkbox-container" id="checkbox-categorias"></div>
+      </div>
       
-      <button onclick="limparFiltros()">
-        <i class="bi bi-x-circle"></i> Limpar
+      <div class="botoes-filtro">
+        <button onclick="aplicarTodosFiltros()" class="btn-filtro">
+          <i class="bi bi-funnel"></i> Aplicar Filtros
+        </button>
+        <button onclick="limparTodosFiltros()" class="btn-filtro btn-secundario">
+          <i class="bi bi-x-circle"></i> Limpar Tudo
+        </button>
+      </div>
+    </div>
+  </aside>
+
+  <main class="conteudo-dashboard">
+    <section class="cards" id="cards-metricas"></section>
+
+    <section class="graficos">
+      <div class="grafico-card">
+        <h2>Vendas por Produto</h2>
+        <canvas id="graficoBarras"></canvas>
+      </div>
+
+      <div class="grafico-card">
+        <h2>Vendas por Categoria</h2>
+        <canvas id="graficoPizza"></canvas>
+      </div>
+
+      <div class="grafico-card">
+        <h2>Mapa de Calor de Vendas</h2>
+        <canvas id="mapaCalor"></canvas>
+      </div>
+
+      <div class="grafico-card">
+        <h2>Mapa de Vendas</h2>
+        <div id="mapaVendas"></div>
+      </div>
+
+      <div class="grafico-card produtos-por-estado">
+        <h2>Produtos Mais Vendidos por Estado</h2>
+        <canvas id="graficoProdutosRegiao"></canvas>
+      </div>
+    </section>
+
+    <section class="ranking">
+      <h3><i class="bi bi-trophy"></i> Ranking de Produtos</h3>
+      <ol id="ranking-produtos"></ol>
+    </section>
+
+    <section class="tabela">
+      <h2><i class="bi bi-table"></i> Vendas Registradas</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Produto</th>
+            <th>Categoria</th>
+            <th>Quantidade</th>
+            <th>Valor</th>
+            <th>Cidade</th>
+            <th>Estado</th>
+            <th>CEP</th>
+            <th>Data</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody id="tabela-vendas"></tbody>
+      </table>
+    </section>
+  </main>
+</div>
+
+<div id="formVendaModal" class="modal" style="display:none;">
+  <div class="modal-content-venda">
+    <div class="modal-header-venda">
+      <h2><i class="bi bi-cart-plus"></i> <span id="formTitulo">Cadastrar Venda</span></h2>
+      <button class="close-venda" onclick="fecharFormVenda()">
+        <i class="bi bi-x-lg"></i>
       </button>
     </div>
-  </section>
+    
+    <form id="formVenda">
+      <input type="hidden" id="venda-id">
+      
+      <div class="form-section">
+        <h3 class="section-title"><i class="bi bi-box-seam"></i> Informações do Produto</h3>
+        <div class="form-grid">
+          <div class="form-group-venda">
+            <label for="produto"><i class="bi bi-tag"></i> Produto</label>
+            <input type="text" id="produto" required placeholder="Nome do produto">
+          </div>
+          <div class="form-group-venda">
+            <label for="categoriaForm"><i class="bi bi-grid-3x3"></i> Categoria</label>
+            <input type="text" id="categoriaForm" required placeholder="Categoria do produto">
+          </div>
+          <div class="form-group-venda">
+            <label for="quantidade"><i class="bi bi-hash"></i> Quantidade</label>
+            <input type="number" id="quantidade" required placeholder="0" min="1">
+          </div>
+          <div class="form-group-venda">
+            <label for="valor"><i class="bi bi-currency-dollar"></i> Valor (R$)</label>
+            <input type="number" step="0.01" id="valor" required placeholder="0.00" min="0">
+          </div>
+        </div>
+      </div>
+      
+      <div class="form-section">
+        <h3 class="section-title"><i class="bi bi-geo-alt"></i> Localização</h3>
+        <div class="form-grid">
+          <div class="form-group-venda">
+            <label for="cidade"><i class="bi bi-buildings"></i> Cidade</label>
+            <input type="text" id="cidade" placeholder="Nome da cidade">
+          </div>
+      <div class="form-group-venda">
+          <label for="estado"><i class="bi bi-geo"></i> Estado</label>
+          <select id="estado" class="select-estado">
+            <option value="">Selecione um estado</option>
+            <option value="AC">Acre (AC)</option>
+            <option value="AL">Alagoas (AL)</option>
+            <option value="AP">Amapá (AP)</option>
+            <option value="AM">Amazonas (AM)</option>
+            <option value="BA">Bahia (BA)</option>
+            <option value="CE">Ceará (CE)</option>
+            <option value="DF">Distrito Federal (DF)</option>
+            <option value="ES">Espírito Santo (ES)</option>
+            <option value="GO">Goiás (GO)</option>
+            <option value="MA">Maranhão (MA)</option>
+            <option value="MT">Mato Grosso (MT)</option>
+            <option value="MS">Mato Grosso do Sul (MS)</option>
+            <option value="MG">Minas Gerais (MG)</option>
+            <option value="PA">Pará (PA)</option>
+            <option value="PB">Paraíba (PB)</option>
+            <option value="PR">Paraná (PR)</option>
+            <option value="PE">Pernambuco (PE)</option>
+            <option value="PI">Piauí (PI)</option>
+            <option value="RJ">Rio de Janeiro (RJ)</option>
+            <option value="RN">Rio Grande do Norte (RN)</option>
+            <option value="RS">Rio Grande do Sul (RS)</option>
+            <option value="RO">Rondônia (RO)</option>
+            <option value="RR">Roraima (RR)</option>
+            <option value="SC">Santa Catarina (SC)</option>
+            <option value="SP">São Paulo (SP)</option>
+            <option value="SE">Sergipe (SE)</option>
+            <option value="TO">Tocantins (TO)</option>
+          </select>
+        </div>
+          <div class="form-group-venda">
+            <label for="pais"><i class="bi bi-globe"></i> País</label>
+            <input type="text" id="pais" placeholder="Nome do país">
+          </div>
+          <div class="form-group-venda">
+            <label for="cep"><i class="bi bi-mailbox"></i> CEP</label>
+            <input type="text" id="cep" required placeholder="00000-000">
+          </div>
+        </div>
+      </div>
+      
+      <div class="form-actions">
+        <button type="button" class="btn-cancelar" onclick="fecharFormVenda()">
+          <i class="bi bi-x-circle"></i> Cancelar
+        </button>
+        <button type="submit" class="btn-salvar">
+          <i class="bi bi-check-circle"></i> Salvar Venda
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
 
-  <!-- Gráficos -->
-  <section class="graficos">
-    <div class="grafico-card">
-      <h2>Vendas por Produto</h2>
-      <canvas id="graficoBarras"></canvas>
+
+<div id="confirmarExclusaoModal" class="modal" style="display:none;">
+  <div class="modal-content" style="max-width: 400px; text-align: center;">
+    <div class="modal-icon">
+      <i class="bi bi-exclamation-triangle" style="font-size: 48px; color: #f44336;"></i>
     </div>
-
-    <div class="grafico-card">
-      <h2>Vendas por Categoria</h2>
-      <canvas id="graficoPizza"></canvas>
+    <h2 style="margin: 10px 0 10px;">Confirmar Exclusão</h2>
+    <p id="confirmarExclusaoTexto" style="margin-bottom: 25px; color: var(--text-secondary);"></p>
+    <div style="display: flex; gap: 15px;">
+      <button id="btnCancelarExclusao" style="flex: 1; padding: 12px; background: #6c757d; border: none; border-radius: 8px; color: white; font-weight: 600; cursor: pointer;">
+        <i class="bi bi-x-circle" style="margin-right: 5px;"></i> Cancelar
+      </button>
+      <button id="btnConfirmarExclusao" style="flex: 1; padding: 12px; background: #f44336; border: none; border-radius: 8px; color: white; font-weight: 600; cursor: pointer;">
+        Excluir
+      </button>
     </div>
+  </div>
+</div>
 
-    <div class="grafico-card">
-      <h2>Mapa de Calor de Vendas</h2>
-      <canvas id="mapaCalor"></canvas>
+<div id="loaderOverlay" class="loader-overlay" style="display: none;">
+  <div class="loader-container">
+    <div class="loader-spinner"></div>
+    <div class="loader-text" id="loaderText"></div>
+    <div class="loader-progress">
+      <div class="loader-progress-bar"></div>
     </div>
+  </div>
+</div>
 
-    <div class="grafico-card">
-      <h2>Mapa de Vendas</h2>
-      <div id="mapaVendas"></div>
-    </div>
+<div id="notificacoesContainer" class="notificacoes-container"></div>
 
-    <div class="grafico-card produtos-por-estado">
-      <h2>Produtos Mais Vendidos por Estado</h2>
-      <canvas id="graficoProdutosRegiao"></canvas>
-    </div>
-  </section>
-
-  <!-- Ranking de produtos -->
-  <section class="ranking">
-    <h3><i class="bi bi-trophy"></i> Ranking de Produtos</h3>
-    <ol id="ranking-produtos"></ol>
-  </section>
-
-  <!-- Tabela -->
-  <section class="tabela">
-    <h2><i class="bi bi-table"></i> Vendas Registradas</h2>
-    <table>
-      <thead>
-        <tr>
-          <th>ID</th>
-          <th>Produto</th>
-          <th>Categoria</th>
-          <th>Quantidade</th>
-          <th>Valor</th>
-          <th>Cidade</th>
-          <th>Estado</th>
-          <th>CEP</th>
-          <th>Data</th>
-          <th>Ações</th>
-        </tr>
-      </thead>
-      <tbody id="tabela-vendas"></tbody>
-    </table>
-  </section>
-</main>
 
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 

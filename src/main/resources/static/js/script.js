@@ -1,59 +1,75 @@
-  // const API_URL = "http://localhost:8081/api/vendas";
-  const API_URL = `${window.location.origin}/api/vendas`;
+const API_URL = `${window.location.origin}/api/vendas`;
 let graficoBarras, graficoPizza, graficoCalor, graficoProdutosRegiao;
 let todasVendas = [];
-let mapaVendasMapa;
 
-// Adiciona evento de input para aplicar máscara no CEP
 document.getElementById('cep').addEventListener('input', function(e) {
   aplicarMascaraCEP(this);
 });
 
-// Adiciona também para permitir apenas números e backspace
 document.getElementById('cep').addEventListener('keydown', function(e) {
-  // Permite: backspace, delete, tab, escape, enter
   if ([46, 8, 9, 27, 13].indexOf(e.keyCode) !== -1 ||
-      // Permite: Ctrl+A, Ctrl+C, Ctrl+V, Ctrl+X
       (e.keyCode === 65 && e.ctrlKey === true) ||
       (e.keyCode === 67 && e.ctrlKey === true) ||
       (e.keyCode === 86 && e.ctrlKey === true) ||
       (e.keyCode === 88 && e.ctrlKey === true) ||
-      // Permite: home, end, left, right
       (e.keyCode >= 35 && e.keyCode <= 39)) {
     return;
   }
   
-  // Não permite caracteres que não sejam números
   if ((e.shiftKey || (e.keyCode < 48 || e.keyCode > 57)) && (e.keyCode < 96 || e.keyCode > 105)) {
     e.preventDefault();
   }
 });
 
 async function carregarDashboard() {
-  const categoriaFiltro = document.getElementById("categoria").value;
-  const dataInicial = document.getElementById("data-inicial").value;
-  const dataFinal = document.getElementById("data-final").value;
+  mostrarLoader("Atualizando dashboard", "Carregando dados e gráficos...");
+  
+  try {
+    const categoriaFiltro = document.getElementById("categoria").value;
+    const dataInicial = document.getElementById("data-inicial").value;
+    const dataFinal = document.getElementById("data-final").value;
+    const pais = document.getElementById("filtro-pais").value;
+    const estado = document.getElementById("filtro-estado").value;
+    const cidade = document.getElementById("filtro-cidade").value;
 
-  const response = await fetch(API_URL);
-  let vendas = await response.json();
+    const response = await fetch(API_URL);
+    let vendas = await response.json();
 
-  if(categoriaFiltro) vendas = vendas.filter(v => v.categoria === categoriaFiltro);
-  if(dataInicial) vendas = vendas.filter(v => v.dataVenda >= dataInicial);
-  if(dataFinal) vendas = vendas.filter(v => v.dataVenda <= dataFinal);
+    if(categoriaFiltro) vendas = vendas.filter(v => v.categoria === categoriaFiltro);
+    if(dataInicial) vendas = vendas.filter(v => v.dataVenda >= dataInicial);
+    if(dataFinal) vendas = vendas.filter(v => v.dataVenda <= dataFinal);
+    if(pais) vendas = vendas.filter(v => v.pais === pais);
+    if(estado) vendas = vendas.filter(v => v.estado === estado);
+    if(cidade) vendas = vendas.filter(v => v.cidade === cidade);
 
-  todasVendas = vendas; 
-  preencherTabela(vendas);
-  preencherCards(vendas);
-  preencherCategorias(vendas);
-  preencherCheckboxCategorias(vendas);
-  filtrarSeries();
+    todasVendas = vendas; 
+    preencherTabela(vendas);
+    preencherCards(vendas);
+    preencherCategorias(vendas);
+    preencherFiltrosGeograficos(vendas);
+    preencherCheckboxCategorias(vendas);
+    
+    preencherGraficoBarras(vendas);
+    preencherGraficoPizza(vendas);
+    preencherRanking(vendas);
+    preencherMapaCalor(vendas);
+    preencherGraficoProdutosRegiao(vendas);
+    preencherMapaVendas(vendas);
 
-  if (categoriaFiltro || dataInicial || dataFinal) {
-    if(vendas.length === 0) {
-      mostrarMensagem("Nenhuma venda encontrada para esse filtro", "erro");
-    } else {
-      mostrarMensagem("Filtro aplicado com sucesso!", "sucesso");
+    esconderLoader();
+    
+    if (categoriaFiltro || dataInicial || dataFinal || pais || estado || cidade) {
+      mostrarNotificacao(
+        "Filtros Aplicados",
+        "Dashboard atualizado com os filtros selecionados.",
+        "info",
+        3000
+      );
     }
+  } catch (error) {
+    esconderLoader();
+
+    console.error("Erro:", error);
   }
 }
 
@@ -62,53 +78,93 @@ function preencherTabela(vendas) {
   tbody.innerHTML = "";
 
   vendas.forEach(v => {
-    // Formata a data para YYYY-MM-DD
     const dataVendaFormatada = v.dataVenda ? v.dataVenda.split("T")[0] : "-";
-    // Formata o CEP para exibição
     const cepFormatado = formatarCEP(v.cep);
+    const produtoEscapado = v.produto.replace(/'/g, "\\'");
 
-    tbody.innerHTML += `
-      <tr>
-        <td>${v.id}</td>
-        <td>${v.produto}</td>
-        <td>${v.categoria}</td>
-        <td>${v.quantidade}</td>
-        <td>R$ ${v.valor.toFixed(2)}</td>
-        <td>${v.cidade || '-'}</td>
-        <td>${v.estado || '-'}</td>
-        <td>${cepFormatado}</td>
-        <td>${dataVendaFormatada}</td>
-        <td>
-          <button class="btn-acao editar" onclick='abrirFormVenda(${JSON.stringify(v)})'>
-            <i class="fas fa-edit"></i>
-          </button>
-          <button class="btn-acao excluir" onclick='deletarVenda(${v.id})'>
-            <i class="fas fa-trash"></i>
-          </button>
-        </td>
-      </tr>`;
+tbody.innerHTML += `
+  <tr>
+    <td>${v.id}</td>
+    <td>${v.produto}</td>
+    <td>${v.categoria}</td>
+    <td>${v.quantidade}</td>
+    <td>R$ ${v.valor.toFixed(2)}</td>
+    <td>${v.cidade || '-'}</td>
+    <td>${v.estado || '-'}</td>
+    <td>${cepFormatado}</td>
+    <td>${dataVendaFormatada}</td>
+    <td>
+      <button class="btn-acao editar" onclick='abrirFormVenda(${JSON.stringify(v)})' title="Editar venda">
+        <i class="fas fa-pencil-alt" style="color: #3498db;"></i>
+      </button>
+      <button class="btn-acao excluir" onclick="confirmarExclusao(${v.id}, '${produtoEscapado}')" title="Excluir venda">
+        <i class="fas fa-trash-alt" style="color: #e74c3c;"></i>
+      </button>
+    </td>
+  </tr>`;
   });
 }
 
+let vendaParaExcluir = null;
 
-async function deletarVenda(id) {
-  if (!confirm("Tem certeza que deseja excluir esta venda?")) return;
+function confirmarExclusao(vendaId, produtoNome) {
+  vendaParaExcluir = vendaId;
+  const texto = document.getElementById("confirmarExclusaoTexto");
+  texto.textContent = `Tem certeza que deseja excluir a venda do produto "${produtoNome}"? Esta ação não pode ser desfeita.`;
   
-  const resp = await fetch(`${API_URL}/${id}`, { method: "DELETE" });
-  if (resp.ok) {
-    mostrarMensagem("Venda deletada com sucesso!", "sucesso");
-    carregarDashboard();
-  } else {
-    mostrarMensagem("Erro ao deletar venda", "erro");
-  }
+  const modal = document.getElementById("confirmarExclusaoModal");
+  modal.style.display = "flex";
+  
+  document.getElementById("btnConfirmarExclusao").onclick = async () => {
+    modal.style.display = "none";
+    await executarExclusao(vendaParaExcluir);
+    vendaParaExcluir = null;
+  };
+  
+  document.getElementById("btnCancelarExclusao").onclick = () => {
+    modal.style.display = "none";
+    vendaParaExcluir = null;
+  };
 }
 
-
-
+async function executarExclusao(id) {
+  mostrarLoader("Excluindo venda", "Aguarde enquanto removemos os dados...");
+  
+  try {
+    const resp = await fetch(`${API_URL}/${id}`, { method: "DELETE" });
+    
+    if (resp.ok) {
+      esconderLoader();
+      mostrarNotificacao(
+        "Sucesso!",
+        "Venda excluída com sucesso.",
+        "sucesso",
+        3000
+      );
+      await carregarDashboard();
+    } else {
+      esconderLoader();
+      mostrarNotificacao(
+        "Erro",
+        "Não foi possível excluir a venda. Tente novamente.",
+        "erro",
+        5000
+      );
+    }
+  } catch (error) {
+    esconderLoader();
+    mostrarNotificacao(
+      "Erro de Conexão",
+      "Não foi possível conectar ao servidor.",
+      "erro",
+      5000
+    );
+    console.error("Erro:", error);
+  }
+}
 function preencherCards(vendas) {
   const containerGeral = document.getElementById("cards-metricas");
 
-  // Métricas gerais
   const totalVendas = vendas.reduce((acc, v) => acc + v.valor, 0);
   const totalProdutos = vendas.reduce((acc, v) => acc + v.quantidade, 0);
   const ticketMedio = vendas.length ? (totalVendas / vendas.length).toFixed(2) : 0;
@@ -120,17 +176,13 @@ function preencherCards(vendas) {
       ).categoria
     : "-";
 
-  // Preencher cards gerais
   containerGeral.innerHTML = `
     <div class="card"><h3>Total Vendas</h3><p>R$ ${totalVendas.toFixed(2)}</p></div>
     <div class="card"><h3>Total Produtos</h3><p>${totalProdutos}</p></div>
     <div class="card"><h3>Ticket Médio</h3><p>R$ ${ticketMedio}</p></div>
     <div class="card"><h3>Categoria Mais Vendida</h3><p>${categoriaMaisVendida}</p></div>
   `;
-
 }
-
-
 
 function preencherGraficoBarras(vendas) {
   const ctx = document.getElementById("graficoBarras");
@@ -169,18 +221,18 @@ function preencherCheckboxCategorias(vendas) {
   const container = document.getElementById("checkbox-categorias");
   const categorias = [...new Set(vendas.map(v=>v.categoria))];
   container.innerHTML = '';
+
   categorias.forEach(c => {
     const id = `chk-${c}`;
     container.innerHTML += `
-      <label>
+      <div class="checkbox-item">
         <input type="checkbox" id="${id}" checked onchange="filtrarSeries()">
-        ${c}
-      </label>
+        <label for="${id}">${c}</label>
+      </div>
     `;
   });
 }
 
-// Filtros geográficos
 function preencherFiltrosGeograficos(vendas) {
   const paises = [...new Set(vendas.map(v=>v.pais).filter(Boolean))];
   const estados = [...new Set(vendas.map(v=>v.estado).filter(Boolean))];
@@ -199,33 +251,63 @@ function preencherFiltrosGeograficos(vendas) {
   cidades.forEach(c => selectCidade.innerHTML += `<option value="${c}">${c}</option>`);
 }
 
-function aplicarFiltroGeografico() {
-  const pais = document.getElementById("filtro-pais").value;
-  const estado = document.getElementById("filtro-estado").value;
-  const cidade = document.getElementById("filtro-cidade").value;
+async function aplicarTodosFiltros() {
+  const botao = document.querySelector('.btn-filtro');
+  const textoOriginal = botao.innerHTML;
+  mostrarLoaderBotao(botao, textoOriginal);
+  
+  try {
+    const categoriaFiltro = document.getElementById("categoria").value;
+    const dataInicial = document.getElementById("data-inicial").value;
+    const dataFinal = document.getElementById("data-final").value;
+    const pais = document.getElementById("filtro-pais").value;
+    const estado = document.getElementById("filtro-estado").value;
+    const cidade = document.getElementById("filtro-cidade").value;
 
-  // Filtra primeiro pelas categorias selecionadas
-  const checkboxes = document.querySelectorAll('#checkbox-categorias input[type="checkbox"]');
-  const categoriasSelecionadas = Array.from(checkboxes)
-                                     .filter(c => c.checked)
-                                     .map(c => c.id.replace('chk-', ''));
+    const checkboxes = document.querySelectorAll('#checkbox-categorias input[type="checkbox"]');
+    const categoriasSelecionadas = Array.from(checkboxes)
+                                       .filter(c => c.checked)
+                                       .map(c => c.id.replace('chk-', ''));
 
-  let filtrado = todasVendas.filter(v => categoriasSelecionadas.includes(v.categoria));
+    let filtrado = todasVendas;
 
-  // Aplica filtro geográfico
-  if (pais) filtrado = filtrado.filter(v => v.pais === pais);
-  if (estado) filtrado = filtrado.filter(v => v.estado === estado);
-  if (cidade) filtrado = filtrado.filter(v => v.cidade === cidade);
+    if (categoriaFiltro) filtrado = filtrado.filter(v => v.categoria === categoriaFiltro);
+    if (dataInicial) filtrado = filtrado.filter(v => v.dataVenda >= dataInicial);
+    if (dataFinal) filtrado = filtrado.filter(v => v.dataVenda <= dataFinal);
+    if (pais) filtrado = filtrado.filter(v => v.pais === pais);
+    if (estado) filtrado = filtrado.filter(v => v.estado === estado);
+    if (cidade) filtrado = filtrado.filter(v => v.cidade === cidade);
+    
+    if (categoriasSelecionadas.length > 0) {
+      filtrado = filtrado.filter(v => categoriasSelecionadas.includes(v.categoria));
+    }
 
-  // Atualiza visualizações
-  preencherTabela(filtrado);
-  preencherCards(filtrado);
-  preencherGraficoBarras(filtrado);
-  preencherGraficoPizza(filtrado);
-  preencherRanking(filtrado);
-  preencherMapaCalor(filtrado);
-  preencherGraficoProdutosRegiao(filtrado);
-  preencherMapaVendas(filtrado);
+    preencherTabela(filtrado);
+    preencherCards(filtrado);
+    preencherGraficoBarras(filtrado);
+    preencherGraficoPizza(filtrado);
+    preencherRanking(filtrado);
+    preencherMapaCalor(filtrado);
+    preencherGraficoProdutosRegiao(filtrado);
+    preencherMapaVendas(filtrado);
+    
+    esconderLoaderBotao(botao);
+    mostrarNotificacao(
+      "Filtros Aplicados",
+      "Todos os filtros foram aplicados com sucesso!",
+      "sucesso",
+      3000
+    );
+  } catch (error) {
+    esconderLoaderBotao(botao);
+ mostrarNotificacao(
+      "Filtros Aplicados",
+      "Todos os filtros foram aplicados com sucesso!",
+      "sucesso",
+      3000
+    );
+    console.error("Erro:", error);
+  }
 }
 
 
@@ -236,7 +318,6 @@ function filtrarSeries() {
                             .map(c => c.id.replace('chk-', ''));
   const dataFiltrada = todasVendas.filter(v => selecionadas.includes(v.categoria));
   
-  // Atualiza visualizações
   preencherCards(dataFiltrada);
   preencherTabela(dataFiltrada);
   preencherGraficoBarras(dataFiltrada);
@@ -246,12 +327,9 @@ function filtrarSeries() {
   preencherGraficoProdutosRegiao(dataFiltrada);
   preencherMapaVendas(dataFiltrada);
 
-  // Atualiza filtros geográficos com base nos dados filtrados
   preencherFiltrosGeograficos(dataFiltrada);
 }
 
-
-// Ranking
 function preencherRanking(vendas) {
   const ranking = vendas.reduce((acc,v)=>{
     acc[v.produto] = (acc[v.produto]||0) + v.valor;
@@ -266,7 +344,6 @@ function preencherRanking(vendas) {
   });
 }
 
-// Mapa de calor
 function preencherMapaCalor(vendas) {
   const ctx = document.getElementById("mapaCalor");
   const datas = [...new Set(vendas.map(v=>v.dataVenda))].sort();
@@ -283,11 +360,9 @@ function preencherMapaCalor(vendas) {
   });
 }
 
-// Produtos mais vendidos por Estado
 function preencherGraficoProdutosRegiao(vendas) {
   const ctx = document.getElementById("graficoProdutosRegiao");
 
-  // Agrupar vendas por estado e produto
   const vendasPorProdutoEstado = {};
   const produtosSet = new Set();
 
@@ -299,7 +374,7 @@ function preencherGraficoProdutosRegiao(vendas) {
     }
   });
 
-  const produtos = Array.from(produtosSet); // todas as labels
+  const produtos = Array.from(produtosSet);
   const estados = Object.keys(vendasPorProdutoEstado);
   const datasets = estados.map((estado, i) => {
     const data = produtos.map(prod => vendasPorProdutoEstado[estado][prod] || 0);
@@ -319,7 +394,6 @@ function preencherGraficoProdutosRegiao(vendas) {
   });
 }
 
-// Mensagens
 function mostrarMensagem(texto, tipo="info") {
   const div = document.getElementById("mensagens");
   div.innerText = texto;
@@ -327,169 +401,218 @@ function mostrarMensagem(texto, tipo="info") {
   setTimeout(() => { div.innerText = ""; div.className = "mensagens"; }, 4000);
 }
 
-// Exportações
-async function exportarExcel() {
+function exportarPDF() {
   const vendas = todasVendas; 
   if (!vendas.length) {
-    alert("Nenhuma venda para exportar!");
+    mostrarNotificacao(
+      "Aviso",
+      "Nenhuma venda para exportar!",
+      "warning",
+      3000
+    );
     return;
   }
 
-  // Criar workbook e planilha
-  const wb = XLSX.utils.book_new();
-  const wsData = [];
-
-  // Adicionar cards resumidos no topo
-  const cards = [
-    { title: "Total Vendas", value: document.querySelector("#cards-metricas div:nth-child(1) p").innerText },
-    { title: "Total Produtos", value: document.querySelector("#cards-metricas div:nth-child(2) p").innerText },
-    { title: "Ticket Médio", value: document.querySelector("#cards-metricas div:nth-child(3) p").innerText },
-    { title: "Categoria Mais Vendida", value: document.querySelector("#cards-metricas div:nth-child(4) p").innerText }
-  ];
+  mostrarLoader("Exportando PDF", "Gerando relatório em PDF...");
   
-  wsData.push(cards.map(c => c.title));
-  wsData.push(cards.map(c => c.value));
-  wsData.push([]); // linha em branco
+  try {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF('p', 'pt', 'a4'); 
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
 
-  // Cabeçalho da tabela
-  const headers = ["ID", "Produto", "Categoria", "Quantidade", "Valor (R$)", "Cidade", "Estado", "CEP", "Data Venda"];
-  wsData.push(headers);
+    function cabecalho() {
+      doc.setFillColor(52, 152, 219);
+      doc.rect(0, 0, pageWidth, 50, 'F'); 
+      doc.setFontSize(18);
+      doc.setTextColor(255, 255, 255);
+      doc.text("Dashboard de Vendas", pageWidth / 2, 30, { align: "center" });
+    }
 
-  // Linhas de vendas
-  vendas.forEach(v => {
-    wsData.push([
-      v.id,
-      v.produto,
-      v.categoria,
-      v.quantidade,
-      v.valor,
-      v.cidade || '-',
-      v.estado || '-',
-      v.cep || '-',
-      v.dataVenda ? v.dataVenda.split('T')[0] : '-'
-    ]);
-  });
+    function rodape(paginaAtual, totalPaginas) {
+      doc.setFillColor(52, 73, 94);
+      doc.rect(0, pageHeight - 30, pageWidth, 30, 'F');
+      doc.setFontSize(10);
+      doc.setTextColor(255, 255, 255);
+      doc.text(`Página ${paginaAtual} de ${totalPaginas}`, pageWidth / 2, pageHeight - 12, { align: "center" });
+    }
 
-  // Criar worksheet
-  const ws = XLSX.utils.aoa_to_sheet(wsData);
-
-  // Ajustar largura das colunas
-  ws['!cols'] = [
-    { wpx: 80 },  // ID
-    { wpx: 150 }, // Produto
-    { wpx: 95 }, // Categoria
-    { wpx: 80 },  // Quantidade
-    { wpx: 80 },  // Valor
-    { wpx: 110 }, // Cidade
-    { wpx: 60 },  // Estado
-    { wpx: 70 }, // CEP
-    { wpx: 70 }  // Data
-  ];
-
-  // Adicionar planilha ao workbook
-  XLSX.utils.book_append_sheet(wb, ws, "Dashboard");
-
-  // Gerar arquivo e baixar
-  XLSX.writeFile(wb, "dashboard_vendas.xlsx");
-}
-
-function exportarPDF() {
-  const { jsPDF } = window.jspdf;
-  const doc = new jsPDF('p', 'pt', 'a4'); 
-  const pageWidth = doc.internal.pageSize.getWidth();
-  const pageHeight = doc.internal.pageSize.getHeight();
-
-  // Função para desenhar cabeçalho
-  function cabecalho() {
-    doc.setFillColor(52, 152, 219); // azul do cabeçalho
-    doc.rect(0, 0, pageWidth, 50, 'F'); 
-    doc.setFontSize(18);
-    doc.setTextColor(255, 255, 255); // branco
-    doc.text("Dashboard de Vendas", pageWidth / 2, 30, { align: "center" });
-  }
-
-  // Função para desenhar rodapé
-  function rodape(paginaAtual, totalPaginas) {
-    doc.setFillColor(52, 73, 94); // cinza escuro
-    doc.rect(0, pageHeight - 30, pageWidth, 30, 'F');
-    doc.setFontSize(10);
-    doc.setTextColor(255, 255, 255);
-    doc.text(`Página ${paginaAtual} de ${totalPaginas}`, pageWidth / 2, pageHeight - 12, { align: "center" });
-  }
-
-  let y = 70;
-  cabecalho();
-
-  // Cards resumidos com cores
-  const cards = [
-    { title: "Total Vendas", value: document.querySelector("#cards-metricas div:nth-child(1) p").innerText, color: [46, 204, 113] },
-    { title: "Total Produtos", value: document.querySelector("#cards-metricas div:nth-child(2) p").innerText, color: [231, 76, 60] },
-    { title: "Ticket Médio", value: document.querySelector("#cards-metricas div:nth-child(3) p").innerText, color: [241, 196, 15] },
-    { title: "Categoria Mais Vendida", value: document.querySelector("#cards-metricas div:nth-child(4) p").innerText, color: [52, 152, 219] }
-  ];
-
-  const cardWidth = (pageWidth - 80) / 4; // espaço entre os cards
-  const cardHeight = 50;
-
-  cards.forEach((c, i) => {
-    const x = 40 + i * cardWidth;
-    doc.setFillColor(...c.color);
-    doc.roundedRect(x, y, cardWidth - 10, cardHeight, 5, 5, 'F'); // fundo colorido
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(10);
-    doc.text(c.title, x + 5, y + 15);
-    doc.setFontSize(12);
-    doc.text(c.value, x + 5, y + 35);
-  });
-  y += cardHeight + 20;
-
-  // Gráficos lado a lado
-  const graficoBarrasImg = document.getElementById("graficoBarras").toDataURL("image/png", 1.0);
-  const graficoPizzaImg = document.getElementById("graficoPizza").toDataURL("image/png", 1.0);
-  doc.addImage(graficoBarrasImg, 'PNG', 40, y, 250, 200);
-  doc.addImage(graficoPizzaImg, 'PNG', 300, y, 250, 200);
-  y += 220;
-
-  // Gráficos abaixo
-  const calorImg = document.getElementById("mapaCalor").toDataURL("image/png", 1.0);
-  const produtosRegiaoImg = document.getElementById("graficoProdutosRegiao").toDataURL("image/png", 1.0);
-  doc.addImage(calorImg, 'PNG', 40, y, 250, 200);
-  doc.addImage(produtosRegiaoImg, 'PNG', 300, y, 250, 200);
-  y += 220;
-
-  // Tabela de vendas
-  if (typeof doc.autoTable === "function") {
-    doc.addPage();
+    let y = 70;
     cabecalho();
-    const totalPaginas = doc.internal.getNumberOfPages();
-    doc.autoTable({ 
-      html: '#tabela-vendas', 
-      startY: 70, 
-      theme: 'grid', 
-      headStyles: { fillColor:[52,73,94], textColor:255 },
-      styles: { fontSize: 9, cellPadding: 2 },
-      didDrawPage: function (data) {
-        const paginaAtual = doc.internal.getCurrentPageInfo().pageNumber;
-        rodape(paginaAtual, totalPaginas);
-      }
+
+    const cards = [
+      { title: "Total Vendas", value: document.querySelector("#cards-metricas div:nth-child(1) p").innerText, color: [46, 204, 113] },
+      { title: "Total Produtos", value: document.querySelector("#cards-metricas div:nth-child(2) p").innerText, color: [231, 76, 60] },
+      { title: "Ticket Médio", value: document.querySelector("#cards-metricas div:nth-child(3) p").innerText, color: [241, 196, 15] },
+      { title: "Categoria Mais Vendida", value: document.querySelector("#cards-metricas div:nth-child(4) p").innerText, color: [52, 152, 219] }
+    ];
+
+    const cardWidth = (pageWidth - 80) / 4;
+    const cardHeight = 50;
+
+    cards.forEach((c, i) => {
+      const x = 40 + i * cardWidth;
+      doc.setFillColor(...c.color);
+      doc.roundedRect(x, y, cardWidth - 10, cardHeight, 5, 5, 'F');
+      doc.setTextColor(255, 255, 255);
+      doc.setFontSize(10);
+      doc.text(c.title, x + 5, y + 15);
+      doc.setFontSize(12);
+      doc.text(c.value, x + 5, y + 35);
     });
-  } else { 
-    alert("Erro: jsPDF AutoTable não carregado corretamente!"); 
-    return; 
+    y += cardHeight + 20;
+
+    const graficoBarrasImg = document.getElementById("graficoBarras").toDataURL("image/png", 1.0);
+    const graficoPizzaImg = document.getElementById("graficoPizza").toDataURL("image/png", 1.0);
+    doc.addImage(graficoBarrasImg, 'PNG', 40, y, 250, 200);
+    doc.addImage(graficoPizzaImg, 'PNG', 300, y, 250, 200);
+    y += 220;
+
+    const calorImg = document.getElementById("mapaCalor").toDataURL("image/png", 1.0);
+    const produtosRegiaoImg = document.getElementById("graficoProdutosRegiao").toDataURL("image/png", 1.0);
+    doc.addImage(calorImg, 'PNG', 40, y, 250, 200);
+    doc.addImage(produtosRegiaoImg, 'PNG', 300, y, 250, 200);
+    y += 220;
+
+    if (typeof doc.autoTable === "function") {
+      doc.addPage();
+      cabecalho();
+      const totalPaginas = doc.internal.getNumberOfPages();
+      doc.autoTable({ 
+        html: '#tabela-vendas', 
+        startY: 70, 
+        theme: 'grid', 
+        headStyles: { fillColor:[52,73,94], textColor:255 },
+        styles: { fontSize: 9, cellPadding: 2 },
+        didDrawPage: function (data) {
+          const paginaAtual = doc.internal.getCurrentPageInfo().pageNumber;
+          rodape(paginaAtual, totalPaginas);
+        }
+      });
+    } else { 
+      esconderLoader();
+      mostrarNotificacao(
+        "Erro",
+        "jsPDF AutoTable não carregado corretamente!",
+        "erro",
+        5000
+      );
+      return; 
+    }
+
+    rodape(1, doc.internal.getNumberOfPages());
+    
+    setTimeout(() => {
+      doc.save("dashboard_completo.pdf");
+      esconderLoader();
+      mostrarNotificacao(
+        "Exportação Concluída",
+        "Arquivo PDF gerado com sucesso!",
+        "sucesso",
+        3000
+      );
+    }, 900);
+    
+  } catch (error) {
+    esconderLoader();
+    mostrarNotificacao(
+      "Erro na Exportação",
+      "Não foi possível exportar o arquivo PDF.",
+      "erro",
+      5000
+    );
+    console.error("Erro:", error);
   }
-
-  // Rodapé na primeira página
-  rodape(1, doc.internal.getNumberOfPages());
-
-  doc.save("dashboard_completo.pdf");
 }
 
+async function exportarExcel() {
+  const vendas = todasVendas; 
+  if (!vendas.length) {
+    mostrarNotificacao(
+      "Aviso",
+      "Nenhuma venda para exportar!",
+      "warning",
+      3000
+    );
+    return;
+  }
 
+  mostrarLoader("Exportando Excel", "Gerando arquivo de exportação...");
+  
+  try {
+    const wb = XLSX.utils.book_new();
+    const wsData = [];
+
+    const cards = [
+      { title: "Total Vendas", value: document.querySelector("#cards-metricas div:nth-child(1) p").innerText },
+      { title: "Total Produtos", value: document.querySelector("#cards-metricas div:nth-child(2) p").innerText },
+      { title: "Ticket Médio", value: document.querySelector("#cards-metricas div:nth-child(3) p").innerText },
+      { title: "Categoria Mais Vendida", value: document.querySelector("#cards-metricas div:nth-child(4) p").innerText }
+    ];
+    
+    wsData.push(cards.map(c => c.title));
+    wsData.push(cards.map(c => c.value));
+    wsData.push([]);
+
+    const headers = ["ID", "Produto", "Categoria", "Quantidade", "Valor (R$)", "Cidade", "Estado", "CEP", "Data Venda"];
+    wsData.push(headers);
+
+    vendas.forEach(v => {
+      wsData.push([
+        v.id,
+        v.produto,
+        v.categoria,
+        v.quantidade,
+        v.valor,
+        v.cidade || '-',
+        v.estado || '-',
+        v.cep || '-',
+        v.dataVenda ? v.dataVenda.split('T')[0] : '-'
+      ]);
+    });
+
+    const ws = XLSX.utils.aoa_to_sheet(wsData);
+
+    ws['!cols'] = [
+      { wpx: 80 },
+      { wpx: 150 },
+      { wpx: 95 },
+      { wpx: 80 },
+      { wpx: 80 },
+      { wpx: 110 },
+      { wpx: 60 },
+      { wpx: 70 },
+      { wpx: 70 }
+    ];
+
+    XLSX.utils.book_append_sheet(wb, ws, "Dashboard");
+    
+    setTimeout(() => {
+      XLSX.writeFile(wb, "dashboard_vendas.xlsx");
+      esconderLoader();
+      mostrarNotificacao(
+        "Exportação Concluída",
+        "Arquivo Excel gerado com sucesso!",
+        "sucesso",
+        3000
+      );
+    }, 900);
+    
+  } catch (error) {
+    esconderLoader();
+    mostrarNotificacao(
+      "Erro na Exportação",
+      "Não foi possível exportar o arquivo Excel.",
+      "erro",
+      5000
+    );
+    console.error("Erro:", error);
+  }
+}
 
 function preencherMapaVendas(vendas) {
     const mapa = document.getElementById("mapaVendas");
-    // Exemplo usando Leaflet
-    const map = L.map(mapa).setView([-23.5505, -46.6333], 5); // Brasil central
+    const map = L.map(mapa).setView([-23.5505, -46.6333], 5);
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: 'Map data © OpenStreetMap contributors'
@@ -509,46 +632,89 @@ function abrirFormVenda(venda = null) {
   const form = document.getElementById("formVenda");
 
   if (venda) {
-    document.getElementById("formTitulo").innerText = "Editar Venda";
-    document.getElementById("venda-id").value = venda.id;
-    document.getElementById("produto").value = venda.produto || "";
-    document.getElementById("categoriaForm").value = venda.categoria || "";
-    document.getElementById("quantidade").value = venda.quantidade || "";
-    document.getElementById("valor").value = venda.valor || "";
-    document.getElementById("cidade").value = venda.cidade || "";
-    document.getElementById("estado").value = venda.estado || "";
-    document.getElementById("pais").value = venda.pais || "";
+    mostrarLoader("Carregando dados da venda", "Preparando formulário...");
     
-    // Aplica máscara no CEP quando for edição
-    if (venda.cep) {
-      let cepFormatado = venda.cep.replace(/\D/g, '');
-      if (cepFormatado.length > 5) {
-        cepFormatado = cepFormatado.substring(0, 5) + '-' + cepFormatado.substring(5, 8);
+    setTimeout(() => {
+      document.getElementById("formTitulo").innerText = "Editar Venda";
+      document.getElementById("venda-id").value = venda.id;
+      document.getElementById("produto").value = venda.produto || "";
+      document.getElementById("categoriaForm").value = venda.categoria || "";
+      document.getElementById("quantidade").value = venda.quantidade || "";
+      document.getElementById("valor").value = venda.valor || "";
+      document.getElementById("cidade").value = venda.cidade || "";
+      document.getElementById("pais").value = venda.pais || "";
+      
+      // Define o estado no select
+      const estadoSelect = document.getElementById("estado");
+      if (venda.estado) {
+        estadoSelect.value = venda.estado.toUpperCase();
+      } else {
+        estadoSelect.value = "";
       }
-      document.getElementById("cep").value = cepFormatado;
-    } else {
-      document.getElementById("cep").value = "";
-    }
+      
+      if (venda.cep) {
+        let cepFormatado = venda.cep.replace(/\D/g, '');
+        if (cepFormatado.length > 5) {
+          cepFormatado = cepFormatado.substring(0, 5) + '-' + cepFormatado.substring(5, 8);
+        }
+        document.getElementById("cep").value = cepFormatado;
+      } else {
+        document.getElementById("cep").value = "";
+      }
+
+      esconderLoader();
+    }, 300);
 
   } else {
     form.reset();
     document.getElementById("venda-id").value = "";
     document.getElementById("formTitulo").innerText = "Cadastrar Venda";
+    document.getElementById("estado").value = "";
   }
 }
 
 function fecharFormVenda() {
   document.getElementById("formVendaModal").style.display = "none";
+  document.getElementById("formVenda").reset();
+  
+  mostrarNotificacao(
+    "Formulário Fechado",
+    "As alterações não salvas foram descartadas.",
+    "info",
+    2000
+  );
 }
+
+document.getElementById("formVendaModal").addEventListener('click', function(e) {
+  if (e.target === this) {
+    fecharFormVenda();
+  }
+});
+
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
+    const modalVenda = document.getElementById("formVendaModal");
+    if (modalVenda.style.display === "flex") {
+      fecharFormVenda();
+    }
+  }
+});
 
 document.getElementById("formVenda").addEventListener("submit", async function(e) {
   e.preventDefault();
 
+  const botaoSalvar = this.querySelector('.btn-salvar');
+  const textoOriginal = botaoSalvar.innerHTML;
+  mostrarLoaderBotao(botaoSalvar, textoOriginal);
+  
+  mostrarLoader(
+    this.querySelector('#venda-id').value ? "Atualizando venda..." : "Salvando nova venda...",
+    "Processando dados..."
+  );
+
   const id = document.getElementById("venda-id").value;
 
-  // Pega a hora atual UTC
   const agora = new Date();
-  // Converte para horário de Brasília (GMT-3)
   const brasil = new Date(agora.getTime() - 3*60*60*1000);
 
   const ano = brasil.getUTCFullYear();
@@ -568,7 +734,6 @@ document.getElementById("formVenda").addEventListener("submit", async function(e
       cidade: document.getElementById("cidade").value,
       estado: document.getElementById("estado").value,
       pais: document.getElementById("pais").value,
-      // Remove a máscara do CEP antes de salvar
       cep: document.getElementById("cep").value.replace(/\D/g, ''),
       latitude: null,
       longitude: null,
@@ -578,28 +743,53 @@ document.getElementById("formVenda").addEventListener("submit", async function(e
   const metodo = id ? "PUT" : "POST";
   const url = id ? `${API_URL}/${id}` : API_URL;
 
-  const resp = await fetch(url, {
-    method: metodo,
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(venda)
-  });
+  try {
+    const resp = await fetch(url, {
+      method: metodo,
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(venda)
+    });
 
-  if (resp.ok) {
-    mostrarMensagem("Venda salva com sucesso!", "sucesso");
-    fecharFormVenda();
-    carregarDashboard();
-  } else {
-    mostrarMensagem("Erro ao salvar venda", "erro");
-    const text = await resp.text();
-    console.error("Erro:", text);
+    if (resp.ok) {
+      esconderLoader();
+      esconderLoaderBotao(botaoSalvar);
+      mostrarNotificacao(
+        "Sucesso!",
+        id ? "Venda atualizada com sucesso!" : "Venda cadastrada com sucesso!",
+        "sucesso",
+        3000
+      );
+      fecharFormVenda();
+      await carregarDashboard();
+    } else {
+      esconderLoader();
+      esconderLoaderBotao(botaoSalvar);
+      mostrarNotificacao(
+        "Erro",
+        "Não foi possível salvar a venda. Verifique os dados.",
+        "erro",
+        5000
+      );
+      const text = await resp.text();
+      console.error("Erro:", text);
+    }
+  } catch (error) {
+    esconderLoader();
+    esconderLoaderBotao(botaoSalvar);
+    mostrarNotificacao(
+      "Erro de Conexão",
+      "Não foi possível conectar ao servidor.",
+      "erro",
+      5000
+    );
+    console.error("Erro:", error);
   }
 });
-
 
 async function obterCoordenadasPorCEP(cep) {
   if (!cep) return null;
 
-  cep = cep.replace(/\D/g,''); // remove qualquer caractere não numérico
+  cep = cep.replace(/\D/g,'');
 
   const url = `https://nominatim.openstreetmap.org/search?q=${cep},Brasil&format=json`;
 
@@ -618,49 +808,170 @@ async function obterCoordenadasPorCEP(cep) {
   return null;
 }
 
-
-function limparFiltros() {
-  document.getElementById('data-inicial').value = '';
-  document.getElementById('data-final').value = '';
-  document.getElementById('categoria').value = '';
-
-  // Se quiser, já recarrega o dashboard sem filtros
-  carregarDashboard();
+async function limparTodosFiltros() {
+  const botao = document.querySelector('.btn-filtro.btn-secundario');
+  const textoOriginal = botao.innerHTML;
+  mostrarLoaderBotao(botao, textoOriginal);
+  
+  try {
+    document.getElementById('data-inicial').value = '';
+    document.getElementById('data-final').value = '';
+    document.getElementById('categoria').value = '';
+    document.getElementById('filtro-pais').value = '';
+    document.getElementById('filtro-estado').value = '';
+    document.getElementById('filtro-cidade').value = '';
+    
+    const checkboxes = document.querySelectorAll('#checkbox-categorias input[type="checkbox"]');
+    checkboxes.forEach(checkbox => {
+      checkbox.checked = true;
+    });
+    
+    await carregarDashboard();
+    
+    esconderLoaderBotao(botao);
+    mostrarNotificacao(
+      "Filtros Limpos",
+      "Todos os filtros foram resetados.",
+      "info",
+      3000
+    );
+  } catch (error) {
+    esconderLoaderBotao(botao);
+    mostrarNotificacao(
+      "Erro",
+      "Não foi possível limpar os filtros.",
+      "erro",
+      5000
+    );
+    console.error("Erro:", error);
+  }
 }
 
-// Função para aplicar máscara de CEP (00000-000)
+function mostrarMensagem(texto, tipo="info") {
+  const titulo = tipo === "sucesso" ? "Sucesso!" : 
+                 tipo === "erro" ? "Erro" : 
+                 tipo === "warning" ? "Atenção" : "Informação";
+  
+  mostrarNotificacao(titulo, texto, tipo, 4000);
+}
+function toggleSidebar() {
+  const sidebar = document.querySelector('.sidebar-filtros');
+  const conteudo = document.querySelector('.conteudo-dashboard');
+  const icone = document.querySelector('.btn-toggle-sidebar i');
+  
+  sidebar.classList.toggle('colapsada');
+  conteudo.classList.toggle('expandido');
+  
+  if (sidebar.classList.contains('colapsada')) {
+    icone.classList.remove('bi-chevron-left');
+    icone.classList.add('bi-chevron-right');
+  } else {
+    icone.classList.remove('bi-chevron-right');
+    icone.classList.add('bi-chevron-left');
+  }
+}
+
 function aplicarMascaraCEP(input) {
-  // Remove tudo que não é número
   let cep = input.value.replace(/\D/g, '');
-  
-  // Limita a 8 dígitos
   cep = cep.substring(0, 8);
-  
-  // Aplica a máscara: 00000-000
   if (cep.length > 5) {
     cep = cep.substring(0, 5) + '-' + cep.substring(5);
   }
-  
-  // Atualiza o valor no campo
   input.value = cep;
 }
 
-function formatarCEPparaSalvar(cep) {
-  return cep.replace(/\D/g, ''); // Remove tudo que não é número
-}
-
-// Função para formatar CEP para exibição (00000-000)
 function formatarCEP(cep) {
   if (!cep) return '-';
-  
-  // Remove tudo que não é número
   cep = cep.toString().replace(/\D/g, '');
-  
-  // Se não tiver 8 dígitos, retorna como está
   if (cep.length !== 8) return cep || '-';
-  
   return cep.substring(0, 5) + '-' + cep.substring(5);
 }
 
-// Inicialização
 carregarDashboard();
+
+
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
+    const modal = document.getElementById("confirmarExclusaoModal");
+    if (modal.style.display === "flex") {
+      modal.style.display = "none";
+      vendaParaExcluir = null;
+    }
+  }
+});
+
+document.getElementById("confirmarExclusaoModal").addEventListener('click', function(e) {
+  if (e.target === this) {
+    this.style.display = "none";
+    vendaParaExcluir = null;
+  }
+});
+
+
+function mostrarLoader(mensagem, detalhes = "") {
+  const loader = document.getElementById("loaderOverlay");
+  const loaderText = document.getElementById("loaderText");
+  
+  loaderText.innerHTML = `
+    <i class="bi bi-hourglass-split loader-icon"></i>
+    <div>
+      <div>${mensagem}</div>
+      ${detalhes ? `<div class="loader-info">${detalhes}</div>` : ''}
+    </div>
+  `;
+  
+  loader.style.display = "flex";
+}
+
+function esconderLoader() {
+  const loader = document.getElementById("loaderOverlay");
+  loader.style.display = "none";
+}
+
+function mostrarLoaderBotao(botao, textoOriginal) {
+  botao.classList.add('btn-loading');
+  botao.dataset.originalText = textoOriginal;
+  botao.disabled = true;
+}
+
+function esconderLoaderBotao(botao) {
+  botao.classList.remove('btn-loading');
+  botao.disabled = false;
+  if (botao.dataset.originalText) {
+    botao.innerHTML = botao.dataset.originalText;
+  }
+}
+
+function mostrarNotificacao(titulo, mensagem, tipo = "info", duracao = 5000) {
+  const container = document.getElementById("notificacoesContainer");
+  
+  const notificacao = document.createElement("div");
+  notificacao.className = `notificacao ${tipo}`;
+  notificacao.innerHTML = `
+    <div class="notificacao-icon">
+      ${tipo === "sucesso" ? '<i class="bi bi-check-circle"></i>' : ''}
+      ${tipo === "erro" ? '<i class="bi bi-x-circle"></i>' : ''}
+      ${tipo === "warning" ? '<i class="bi bi-exclamation-triangle"></i>' : ''}
+      ${tipo === "info" ? '<i class="bi bi-info-circle"></i>' : ''}
+    </div>
+    <div class="notificacao-content">
+      <div class="notificacao-title">${titulo}</div>
+      <div class="notificacao-message">${mensagem}</div>
+    </div>
+    <button class="notificacao-close" onclick="this.parentElement.remove()">
+      <i class="bi bi-x"></i>
+    </button>
+    <div class="notificacao-progress">
+      <div class="notificacao-progress-bar" style="animation-duration: ${duracao}ms"></div>
+    </div>
+  `;
+  
+  container.appendChild(notificacao);
+  
+  setTimeout(() => {
+    if (notificacao.parentElement) {
+      notificacao.style.animation = "slideIn 0.3s ease-out reverse forwards";
+      setTimeout(() => notificacao.remove(), 300);
+    }
+  }, duracao);
+}

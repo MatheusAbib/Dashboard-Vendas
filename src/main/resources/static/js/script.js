@@ -1,4 +1,5 @@
-  const API_URL = "http://localhost:8081/api/vendas";
+  // const API_URL = "http://localhost:8081/api/vendas";
+  const API_URL = `${window.location.origin}/api/vendas`;
 let graficoBarras, graficoPizza, graficoCalor, graficoProdutosRegiao;
 let todasVendas = [];
 let mapaVendasMapa;

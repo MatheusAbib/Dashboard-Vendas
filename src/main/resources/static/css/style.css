@@ -32,6 +32,8 @@ html {
   padding: 10px;
 }
 
+
+
 body {
   width: 100%;
   max-width: 1800px;
@@ -858,6 +860,10 @@ header h1 {
   gap: 10px;
 }
 
+#botao{
+display: none;
+}
+
 .sidebar-content {
   padding: clamp(15px, 3vw, 25px);
   display: flex;
@@ -1576,5 +1582,15 @@ header h1 {
   
   .conteudo-dashboard.expandido {
     margin-left: 0;
+  }
+
+  #botao{
+        background: var(--primary);
+    color: white;
+    padding: clamp(5px, 3vw, 20px);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
   }
 }

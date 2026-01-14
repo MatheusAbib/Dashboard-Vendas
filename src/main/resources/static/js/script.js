@@ -1070,3 +1070,63 @@ window.addEventListener('orientationchange', function() {
     }
   }, 300);
 });
+
+function ajustarInputsDataMobile() {
+  if (window.innerWidth <= 767) {
+    const dateInputs = document.querySelectorAll('input[type="date"]');
+    
+    dateInputs.forEach(input => {
+      input.style.width = '100%';
+      input.style.maxWidth = '100%';
+      input.style.boxSizing = 'border-box';
+      input.style.webkitAppearance = 'none';
+      input.style.mozAppearance = 'textfield';
+      
+      if (!input.parentElement.classList.contains('date-wrapper')) {
+        const wrapper = document.createElement('div');
+        wrapper.className = 'date-wrapper';
+        wrapper.style.position = 'relative';
+        wrapper.style.width = '100%';
+        
+        input.parentNode.insertBefore(wrapper, input);
+        wrapper.appendChild(input);
+        
+        const icon = document.createElement('i');
+        icon.className = 'bi bi-calendar';
+        icon.style.position = 'absolute';
+        icon.style.right = '10px';
+        icon.style.top = '50%';
+        icon.style.transform = 'translateY(-50%)';
+        icon.style.color = 'var(--text-secondary)';
+        icon.style.pointerEvents = 'none';
+        wrapper.appendChild(icon);
+      }
+    });
+  }
+}
+
+window.addEventListener('load', ajustarInputsDataMobile);
+window.addEventListener('resize', ajustarInputsDataMobile);
+
+document.addEventListener('DOMContentLoaded', ajustarInputsDataMobile);
+
+const style = document.createElement('style');
+style.textContent = `
+  @media (max-width: 767px) {
+    .date-wrapper {
+      width: 100% !important;
+      display: block !important;
+    }
+    
+    .date-wrapper input[type="date"] {
+      width: 100% !important;
+      padding-right: 40px !important;
+      background: white !important;
+      border: 2px solid var(--border) !important;
+      border-radius: 8px !important;
+      height: 44px !important;
+      font-size: 16px !important;
+    }
+  }
+`;
+document.head.appendChild(style);

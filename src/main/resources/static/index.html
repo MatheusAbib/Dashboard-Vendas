@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
   <title>Dashboard de Vendas</title>
   
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -44,8 +44,9 @@
 
 <div class="dashboard-layout">
   <aside class="sidebar-filtros">
-    <div class="sidebar-header">
+    <div class="sidebar-header" onclick="toggleSidebar()">
       <h3><i class="bi bi-filter"></i> Filtros</h3>
+      <i class="bi bi-chevron-down d-md-none"></i>
     </div>
     
     <div class="sidebar-content">
@@ -293,6 +294,5 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 
 <script src="js/script.js"></script>
-
 </body>
 </html>

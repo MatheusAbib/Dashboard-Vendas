@@ -1,4 +1,4 @@
-const API_URL = `${window.location.origin}/api/vendas`;
+  const API_URL = `${window.location.origin}/api/vendas`;
 let graficoBarras, graficoPizza, graficoCalor, graficoProdutosRegiao;
 let todasVendas = [];
 
@@ -193,7 +193,20 @@ function preencherGraficoBarras(vendas) {
   graficoBarras = new Chart(ctx, {
     type: "bar",
     data: { labels, datasets:[{label:"Valor (R$)", data, backgroundColor:"rgba(75,192,192,0.6)"}] },
-    options: { responsive:true, scales:{ y:{beginAtZero:true} } }
+    options: { 
+      responsive: true,
+      maintainAspectRatio: false,
+      scales:{ y:{beginAtZero:true} },
+      plugins: {
+        legend: {
+          labels: {
+            font: {
+              size: window.innerWidth < 768 ? 10 : 12
+            }
+          }
+        }
+      }
+    }
   });
 }
 
@@ -206,7 +219,20 @@ function preencherGraficoPizza(vendas) {
   graficoPizza = new Chart(ctx, {
     type:"pie",
     data:{ labels:categorias, datasets:[{data:valores, backgroundColor:["#4CAF50","#FF6384","#36A2EB","#FFCE56"]}] },
-    options:{ responsive:true }
+    options:{ 
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          position: window.innerWidth < 768 ? 'bottom' : 'right',
+          labels: {
+            font: {
+              size: window.innerWidth < 768 ? 10 : 12
+            }
+          }
+        }
+      }
+    }
   });
 }
 
@@ -356,7 +382,20 @@ function preencherMapaCalor(vendas) {
       labels: datas,
       datasets:[{label:"Vendas por Dia", data:valores, backgroundColor:valores.map(v=>`rgba(255,0,0,${v/Math.max(...valores)})`)}]
     },
-    options:{ responsive:true, scales:{ y:{ beginAtZero:true } } }
+    options:{ 
+      responsive: true,
+      maintainAspectRatio: false,
+      scales:{ y:{ beginAtZero:true } },
+      plugins: {
+        legend: {
+          labels: {
+            font: {
+              size: window.innerWidth < 768 ? 10 : 12
+            }
+          }
+        }
+      }
+    }
   });
 }
 
@@ -390,7 +429,21 @@ function preencherGraficoProdutosRegiao(vendas) {
   graficoProdutosRegiao = new Chart(ctx, {
     type: "bar",
     data: { labels: produtos, datasets },
-    options: { indexAxis:'y', responsive:true, scales:{ x:{ beginAtZero:true } } }
+    options: { 
+      indexAxis:'y', 
+      responsive: true,
+      maintainAspectRatio: false,
+      scales:{ x:{ beginAtZero:true } },
+      plugins: {
+        legend: {
+          labels: {
+            font: {
+              size: window.innerWidth < 768 ? 10 : 12
+            }
+          }
+        }
+      }
+    }
   });
 }
 
@@ -625,6 +678,10 @@ function preencherMapaVendas(vendas) {
              .bindPopup(`${v.produto} - ${v.cidade} - R$${v.valor}`);
         }
     });
+    
+    setTimeout(() => {
+        map.invalidateSize();
+    }, 100);
 }
 
 function abrirFormVenda(venda = null) {
@@ -644,7 +701,6 @@ function abrirFormVenda(venda = null) {
       document.getElementById("cidade").value = venda.cidade || "";
       document.getElementById("pais").value = venda.pais || "";
       
-      // Define o estado no select
       const estadoSelect = document.getElementById("estado");
       if (venda.estado) {
         estadoSelect.value = venda.estado.toUpperCase();
@@ -855,19 +911,9 @@ function mostrarMensagem(texto, tipo="info") {
   mostrarNotificacao(titulo, texto, tipo, 4000);
 }
 function toggleSidebar() {
-  const sidebar = document.querySelector('.sidebar-filtros');
-  const conteudo = document.querySelector('.conteudo-dashboard');
-  const icone = document.querySelector('.btn-toggle-sidebar i');
-  
-  sidebar.classList.toggle('colapsada');
-  conteudo.classList.toggle('expandido');
-  
-  if (sidebar.classList.contains('colapsada')) {
-    icone.classList.remove('bi-chevron-left');
-    icone.classList.add('bi-chevron-right');
-  } else {
-    icone.classList.remove('bi-chevron-right');
-    icone.classList.add('bi-chevron-left');
+  if (window.innerWidth < 768) {
+    const sidebar = document.querySelector('.sidebar-filtros');
+    sidebar.classList.toggle('colapsada');
   }
 }
 
@@ -975,3 +1021,52 @@ function mostrarNotificacao(titulo, mensagem, tipo = "info", duracao = 5000) {
     }
   }, duracao);
 }
+
+window.addEventListener('resize', function() {
+  if (graficoBarras) {
+    graficoBarras.resize();
+    graficoBarras.options.plugins.legend.labels.font.size = window.innerWidth < 768 ? 10 : 12;
+    graficoBarras.update();
+  }
+  if (graficoPizza) {
+    graficoPizza.resize();
+    graficoPizza.options.plugins.legend.position = window.innerWidth < 768 ? 'bottom' : 'right';
+    graficoPizza.options.plugins.legend.labels.font.size = window.innerWidth < 768 ? 10 : 12;
+    graficoPizza.update();
+  }
+  if (graficoCalor) {
+    graficoCalor.resize();
+    graficoCalor.options.plugins.legend.labels.font.size = window.innerWidth < 768 ? 10 : 12;
+    graficoCalor.update();
+  }
+  if (graficoProdutosRegiao) {
+    graficoProdutosRegiao.resize();
+    graficoProdutosRegiao.options.plugins.legend.labels.font.size = window.innerWidth < 768 ? 10 : 12;
+    graficoProdutosRegiao.update();
+  }
+  
+  const mapaElement = document.getElementById('mapaVendas');
+  if (mapaElement && mapaElement._leaflet_id) {
+    const map = L.map(mapaElement);
+    setTimeout(() => {
+      map.invalidateSize();
+    }, 100);
+  }
+});
+
+window.addEventListener('orientationchange', function() {
+  setTimeout(function() {
+    if (graficoBarras) graficoBarras.resize();
+    if (graficoPizza) graficoPizza.resize();
+    if (graficoCalor) graficoCalor.resize();
+    if (graficoProdutosRegiao) graficoProdutosRegiao.resize();
+    
+    const mapaElement = document.getElementById('mapaVendas');
+    if (mapaElement && mapaElement._leaflet_id) {
+      const map = L.map(mapaElement);
+      setTimeout(() => {
+        map.invalidateSize();
+      }, 300);
+    }
+  }, 300);
+});

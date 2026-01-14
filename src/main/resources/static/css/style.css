@@ -194,15 +194,14 @@ header h1 {
 .filtros-row {
   display: flex;
   flex-wrap: wrap;
-  gap: clamp(10px, 3vw, 15px);
-  align-items: flex-end;
+  gap: 10px;
+  align-items: stretch;
 }
 
 .filtro-group {
   display: flex;
   flex-direction: column;
-  min-width: min(150px, 100%);
-  /* flex: 1 1 200px; */
+  min-width: 0;
 }
 
 .filtro-group.categorias {
@@ -234,6 +233,11 @@ header h1 {
 
 .filtro-group input:focus, .filtro-group select:focus {
   border-color: var(--primary);
+}
+
+.filtro-group input[type="date"] {
+  min-width: 0;
+  flex: 1;
 }
 
 .filtros-section button {
@@ -858,7 +862,7 @@ header h1 {
   padding: clamp(15px, 3vw, 25px);
   display: flex;
   flex-direction: column;
-  gap: clamp(15px, 3vw, 20px);
+  gap: clamp(15px, 3vw, 30px);
   transition: all 0.3s ease;
 }
 
@@ -1393,6 +1397,30 @@ header h1 {
   .notificacao {
     max-width: 100%;
   }
+
+   .filtro-group input[type="date"],
+  .sidebar-content input[type="date"] {
+    width: 100%;
+    max-width: 100%;
+    font-size: 16px !important; 
+    padding: 12px 15px;
+    box-sizing: border-box;
+  }
+  
+  input[type="date"]::-webkit-calendar-picker-indicator {
+    padding: 0;
+    margin: 0;
+    opacity: 0.7;
+  }
+  
+  input[type="date"] {
+    min-height: 44px; 
+  }
+  
+  .filtro-group {
+    position: relative;
+  }
+  
 }
 
 @media (max-width: 480px) {
@@ -1427,6 +1455,24 @@ header h1 {
   .filtro-group {
     width: 100%;
   }
+
+   .filtro-group input[type="date"] {
+    font-size: 14px;
+    padding: 10px 12px 10px 40px;
+    background-position: left 10px center;
+    background-repeat: no-repeat;
+    background-size: 20px;
+  }
+  
+  input[type="date"]::-webkit-inner-spin-button,
+  input[type="date"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  
+  input[type="date"]::-webkit-clear-button {
+    display: none;
+  }
   
   .header-buttons .btn-add {
     min-width: 120px;
@@ -1451,6 +1497,28 @@ header h1 {
   
   .grafico-card.produtos-por-estado {
     grid-column: span 2;
+  }
+}
+
+@media (max-width: 360px) {
+  .filtro-group input[type="date"] {
+    font-size: 13px;
+    padding: 8px 10px 8px 35px;
+  }
+  
+  .filtro-group label {
+    font-size: 12px;
+  }
+  
+  input[type="date"]::placeholder {
+    font-size: 12px;
+  }
+}
+
+@media (max-height: 500px) and (max-width: 767px) {
+  .filtro-group input[type="date"]:focus {
+    position: relative;
+    z-index: 100;
   }
 }
 

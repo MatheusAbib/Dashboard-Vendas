@@ -1292,7 +1292,7 @@ header h1 {
   .sidebar-filtros {
     width: min(320px, 100%);
     position: sticky;
-    top: 165px;
+    top: 150px;
     height: fit-content;
   }
   

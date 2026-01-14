@@ -1339,7 +1339,17 @@ display: none;
   .sidebar-filtros:not(.colapsada) .sidebar-content {
     display: flex;
   }
+  .modal{
+    padding: 5px;
+  }
+
+
+
+    .modal-content-venda::-webkit-scrollbar{
+    display: none !important;
+  }
   
+
   .modal-content {
     max-width: 95%;
     padding: 15px;

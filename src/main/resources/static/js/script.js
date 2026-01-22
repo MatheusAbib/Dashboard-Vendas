@@ -665,6 +665,11 @@ async function exportarExcel() {
 
 function preencherMapaVendas(vendas) {
     const mapa = document.getElementById("mapaVendas");
+    
+    if (mapa._leaflet_id) {
+        mapa._leaflet_map.remove();
+    }
+    
     const map = L.map(mapa).setView([-23.5505, -46.6333], 5);
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -678,6 +683,8 @@ function preencherMapaVendas(vendas) {
              .bindPopup(`${v.produto} - ${v.cidade} - R$${v.valor}`);
         }
     });
+    
+    mapa._leaflet_map = map;
     
     setTimeout(() => {
         map.invalidateSize();

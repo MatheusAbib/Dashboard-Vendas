@@ -24,7 +24,6 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/vendas")
-@CrossOrigin(origins = "*") // permitir frontend acessar
 public class VendaController {
 
     @Autowired

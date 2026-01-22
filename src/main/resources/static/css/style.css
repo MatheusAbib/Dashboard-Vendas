@@ -865,10 +865,10 @@ display: none;
 }
 
 .sidebar-content {
-  padding: clamp(15px, 3vw, 25px);
+  padding: clamp(15px, 3vw, 20px);
   display: flex;
   flex-direction: column;
-  gap: clamp(15px, 3vw, 30px);
+  gap: clamp(12px, 3vw, 0px);
   transition: all 0.3s ease;
 }
 
@@ -889,7 +889,7 @@ display: none;
 .sidebar-content .filtro-group input,
 .sidebar-content .filtro-group select {
   width: 100%;
-  padding: clamp(10px, 3vw, 12px) clamp(12px, 3vw, 15px);
+  padding: clamp(6px, 3vw, 10px) clamp(12px, 3vw, 15px);
   border-radius: clamp(8px, 2vw, 10px);
   border: 2px solid var(--border);
   background: white;

@@ -1,4 +1,4 @@
-  const API_URL = `${window.location.origin}/api/vendas`;
+const API_URL = 'https://lovely-connie-maah2020-52e26217.koyeb.app/api/vendas';
 let graficoBarras, graficoPizza, graficoCalor, graficoProdutosRegiao;
 let todasVendas = [];
 

@@ -33,22 +33,19 @@ public class VendaController {
     private ExcelExportService excelExportService;
 
     @Autowired
-    private ObjectMapper objectMapper; // Jackson para parse de JSON
+    private ObjectMapper objectMapper; 
 
-    // Listar todas as vendas
     @GetMapping
     public List<Venda> listar() {
         return vendaRepository.findAll();
     }
 
-    // Adicionar uma nova venda
     @PostMapping
     public Venda adicionar(@RequestBody Venda venda) {
         preencherCoordenadas(venda);
         return vendaRepository.save(venda);
     }
 
-    // Atualizar venda existente
     @PutMapping("/{id}")
     public ResponseEntity<Venda> atualizar(@PathVariable Long id, @RequestBody Venda vendaAtualizada) {
         return vendaRepository.findById(id)
@@ -62,7 +59,7 @@ public class VendaController {
                     venda.setPais(vendaAtualizada.getPais());
                     venda.setCep(vendaAtualizada.getCep());
 
-                    preencherCoordenadas(venda); // Atualiza latitude e longitude
+                    preencherCoordenadas(venda); 
 
                     Venda atualizado = vendaRepository.save(venda);
                     return ResponseEntity.ok(atualizado);
@@ -70,7 +67,6 @@ public class VendaController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    // Deletar venda pelo ID
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deletar(@PathVariable Long id) {
         if (vendaRepository.existsById(id)) {
@@ -81,7 +77,6 @@ public class VendaController {
         }
     }
 
-    // Exportar vendas para Excel
     @GetMapping("/export/excel")
     public ResponseEntity<byte[]> exportarExcel() throws IOException {
         List<Venda> vendas = vendaRepository.findAll();

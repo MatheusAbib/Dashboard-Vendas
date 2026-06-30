@@ -12,9 +12,10 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
+  <link rel="icon" type="image/x-icon" href="imagens/dashboard.png">
+
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
   
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
   
   <link rel="stylesheet" href="css/style.css">
@@ -95,10 +96,10 @@
       
       <div class="botoes-filtro">
         <button onclick="aplicarTodosFiltros()" class="btn-filtro">
-          <i class="bi bi-funnel"></i> Aplicar Filtros
+          <i class="bi bi-funnel"></i> Aplicar
         </button>
         <button onclick="limparTodosFiltros()" class="btn-filtro btn-secundario">
-          <i class="bi bi-x-circle"></i> Limpar Tudo
+          <i class="bi bi-x-circle"></i> Limpar
         </button>
       </div>
     </div>
@@ -127,38 +128,47 @@
         <h2>Mapa de Vendas</h2>
         <div id="mapaVendas"></div>
       </div>
+    </section>
 
-      <div class="grafico-card produtos-por-estado">
-        <h2>Produtos Mais Vendidos por Estado</h2>
-        <canvas id="graficoProdutosRegiao"></canvas>
+    <section class="graficos-container">
+      <div class="grafico-linha-dupla">
+        <div class="grafico-card ranking-card">
+          <h3><i class="bi bi-trophy"></i> Ranking de Produtos</h3>
+          <ol id="ranking-produtos"></ol>
+        </div>
+
+        <div class="grafico-card">
+          <h2>Vendas por Estado</h2>
+          <canvas id="graficoVendasEstado"></canvas>
+        </div>
       </div>
     </section>
 
-    <section class="ranking">
-      <h3><i class="bi bi-trophy"></i> Ranking de Produtos</h3>
-      <ol id="ranking-produtos"></ol>
-    </section>
-
-    <section class="tabela">
-      <h2><i class="bi bi-table"></i> Vendas Registradas</h2>
-      <table>
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Produto</th>
-            <th>Categoria</th>
-            <th>Quantidade</th>
-            <th>Valor</th>
-            <th>Cidade</th>
-            <th>Estado</th>
-            <th>CEP</th>
-            <th>Data</th>
-            <th>Ações</th>
-          </tr>
-        </thead>
-        <tbody id="tabela-vendas"></tbody>
-      </table>
-    </section>
+<section class="tabela">
+  <div class="tabela-header">
+    <h2><i class="bi bi-table"></i> Vendas Registradas</h2>
+    <button onclick="abrirFormVenda()" class="btn-add">
+      <i class="bi bi-plus-circle"></i> Nova Venda
+    </button>
+  </div>
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Produto</th>
+        <th>Categoria</th>
+        <th>Quantidade</th>
+        <th>Valor</th>
+        <th>Cidade</th>
+        <th>Estado</th>
+        <th>CEP</th>
+        <th>Data</th>
+        <th>Ações</th>
+      </tr>
+    </thead>
+    <tbody id="tabela-vendas"></tbody>
+  </table>
+</section>
   </main>
 </div>
 
@@ -203,39 +213,39 @@
             <label for="cidade"><i class="bi bi-buildings"></i> Cidade</label>
             <input type="text" id="cidade" placeholder="Nome da cidade">
           </div>
-      <div class="form-group-venda">
-          <label for="estado"><i class="bi bi-geo"></i> Estado</label>
-          <select id="estado" class="select-estado">
-            <option value="">Selecione um estado</option>
-            <option value="AC">Acre (AC)</option>
-            <option value="AL">Alagoas (AL)</option>
-            <option value="AP">Amapá (AP)</option>
-            <option value="AM">Amazonas (AM)</option>
-            <option value="BA">Bahia (BA)</option>
-            <option value="CE">Ceará (CE)</option>
-            <option value="DF">Distrito Federal (DF)</option>
-            <option value="ES">Espírito Santo (ES)</option>
-            <option value="GO">Goiás (GO)</option>
-            <option value="MA">Maranhão (MA)</option>
-            <option value="MT">Mato Grosso (MT)</option>
-            <option value="MS">Mato Grosso do Sul (MS)</option>
-            <option value="MG">Minas Gerais (MG)</option>
-            <option value="PA">Pará (PA)</option>
-            <option value="PB">Paraíba (PB)</option>
-            <option value="PR">Paraná (PR)</option>
-            <option value="PE">Pernambuco (PE)</option>
-            <option value="PI">Piauí (PI)</option>
-            <option value="RJ">Rio de Janeiro (RJ)</option>
-            <option value="RN">Rio Grande do Norte (RN)</option>
-            <option value="RS">Rio Grande do Sul (RS)</option>
-            <option value="RO">Rondônia (RO)</option>
-            <option value="RR">Roraima (RR)</option>
-            <option value="SC">Santa Catarina (SC)</option>
-            <option value="SP">São Paulo (SP)</option>
-            <option value="SE">Sergipe (SE)</option>
-            <option value="TO">Tocantins (TO)</option>
-          </select>
-        </div>
+          <div class="form-group-venda">
+            <label for="estado"><i class="bi bi-geo"></i> Estado</label>
+            <select id="estado" class="select-estado">
+              <option value="">Selecione um estado</option>
+              <option value="AC">Acre (AC)</option>
+              <option value="AL">Alagoas (AL)</option>
+              <option value="AP">Amapá (AP)</option>
+              <option value="AM">Amazonas (AM)</option>
+              <option value="BA">Bahia (BA)</option>
+              <option value="CE">Ceará (CE)</option>
+              <option value="DF">Distrito Federal (DF)</option>
+              <option value="ES">Espírito Santo (ES)</option>
+              <option value="GO">Goiás (GO)</option>
+              <option value="MA">Maranhão (MA)</option>
+              <option value="MT">Mato Grosso (MT)</option>
+              <option value="MS">Mato Grosso do Sul (MS)</option>
+              <option value="MG">Minas Gerais (MG)</option>
+              <option value="PA">Pará (PA)</option>
+              <option value="PB">Paraíba (PB)</option>
+              <option value="PR">Paraná (PR)</option>
+              <option value="PE">Pernambuco (PE)</option>
+              <option value="PI">Piauí (PI)</option>
+              <option value="RJ">Rio de Janeiro (RJ)</option>
+              <option value="RN">Rio Grande do Norte (RN)</option>
+              <option value="RS">Rio Grande do Sul (RS)</option>
+              <option value="RO">Rondônia (RO)</option>
+              <option value="RR">Roraima (RR)</option>
+              <option value="SC">Santa Catarina (SC)</option>
+              <option value="SP">São Paulo (SP)</option>
+              <option value="SE">Sergipe (SE)</option>
+              <option value="TO">Tocantins (TO)</option>
+            </select>
+          </div>
           <div class="form-group-venda">
             <label for="pais"><i class="bi bi-globe"></i> País</label>
             <input type="text" id="pais" placeholder="Nome do país">
@@ -258,7 +268,6 @@
     </form>
   </div>
 </div>
-
 
 <div id="confirmarExclusaoModal" class="modal" style="display:none;">
   <div class="modal-content" style="max-width: 400px; text-align: center;">
@@ -290,9 +299,7 @@
 
 <div id="notificacoesContainer" class="notificacoes-container"></div>
 
-
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
-
 <script src="js/script.js"></script>
 </body>
 </html>

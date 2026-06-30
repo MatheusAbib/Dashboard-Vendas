@@ -1,6 +1,78 @@
 const API_URL = '/api/vendas';
 let graficoBarras, graficoPizza, graficoCalor, graficoProdutosRegiao;
 let todasVendas = [];
+let graficoVendasEstado;
+
+
+
+function preencherGraficoVendasEstado(vendas) {
+  const ctx = document.getElementById("graficoVendasEstado");
+  
+  const vendasPorEstado = vendas.reduce((acc, v) => {
+    if (v.estado) {
+      acc[v.estado] = (acc[v.estado] || 0) + v.valor;
+    }
+    return acc;
+  }, {});
+  
+  const estados = Object.keys(vendasPorEstado).sort();
+  const valores = estados.map(e => vendasPorEstado[e]);
+
+  if (graficoVendasEstado) graficoVendasEstado.destroy();
+
+  graficoVendasEstado = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: estados,
+      datasets: [{
+        label: 'Vendas por Estado (R$)',
+        data: valores,
+        backgroundColor: 'rgba(54, 162, 235, 0.7)',
+        borderColor: 'rgba(54, 162, 235, 1)',
+        borderWidth: 1,
+        borderRadius: 4
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: {
+        y: {
+          beginAtZero: true,
+          ticks: {
+            callback: function(value) {
+              return 'R$ ' + value.toFixed(2);
+            }
+          }
+        },
+        x: {
+          ticks: {
+            font: {
+              size: window.innerWidth < 768 ? 9 : 11
+            }
+          }
+        }
+      },
+      plugins: {
+        legend: {
+          display: true,
+          labels: {
+            font: {
+              size: window.innerWidth < 768 ? 10 : 12
+            }
+          }
+        },
+        tooltip: {
+          callbacks: {
+            label: function(context) {
+              return 'R$ ' + context.parsed.y.toFixed(2);
+            }
+          }
+        }
+      }
+    }
+  });
+}
 
 document.getElementById('cep').addEventListener('input', function(e) {
   aplicarMascaraCEP(this);
@@ -48,7 +120,8 @@ async function carregarDashboard() {
     preencherCategorias(vendas);
     preencherFiltrosGeograficos(vendas);
     preencherCheckboxCategorias(vendas);
-    
+    preencherGraficoVendasEstado(vendas);
+
     preencherGraficoBarras(vendas);
     preencherGraficoPizza(vendas);
     preencherRanking(vendas);
@@ -316,6 +389,8 @@ async function aplicarTodosFiltros() {
     preencherMapaCalor(filtrado);
     preencherGraficoProdutosRegiao(filtrado);
     preencherMapaVendas(filtrado);
+    preencherGraficoVendasEstado(filtrado);
+
     
     esconderLoaderBotao(botao);
     mostrarNotificacao(
@@ -352,45 +427,100 @@ function filtrarSeries() {
   preencherMapaCalor(dataFiltrada);
   preencherGraficoProdutosRegiao(dataFiltrada);
   preencherMapaVendas(dataFiltrada);
+  preencherGraficoVendasEstado(dataFiltrada);
+
 
   preencherFiltrosGeograficos(dataFiltrada);
 }
 
 function preencherRanking(vendas) {
-  const ranking = vendas.reduce((acc,v)=>{
-    acc[v.produto] = (acc[v.produto]||0) + v.valor;
+  const ranking = vendas.reduce((acc, v) => {
+    acc[v.produto] = (acc[v.produto] || 0) + v.valor;
     return acc;
   }, {});
-  const rankingOrdenado = Object.entries(ranking).sort((a,b)=>b[1]-a[1]);
+  
+  const rankingOrdenado = Object.entries(ranking)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 15);
 
   const ol = document.getElementById("ranking-produtos");
   ol.innerHTML = '';
-  rankingOrdenado.forEach(([produto,valor]) => {
-    ol.innerHTML += `<li>${produto} - R$ ${valor.toFixed(2)}</li>`;
+  
+  rankingOrdenado.forEach(([produto, valor], index) => {
+    const posicao = index + 1;
+    ol.innerHTML += `
+      <li>
+        <span class="ranking-posicao">${posicao}.</span>
+        <span class="ranking-produto">${produto}</span>
+        <span class="ranking-valor">R$ ${valor.toFixed(2)}</span>
+      </li>
+    `;
   });
 }
-
 function preencherMapaCalor(vendas) {
   const ctx = document.getElementById("mapaCalor");
-  const datas = [...new Set(vendas.map(v=>v.dataVenda))].sort();
-  const valores = datas.map(d => vendas.filter(v=>v.dataVenda===d).reduce((acc,v)=>acc+v.valor,0));
+  
+  function formatarDataHora(dataISO) {
+    const d = new Date(dataISO);
+    return d.toLocaleString('pt-BR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  }
 
-  if(graficoCalor) graficoCalor.destroy();
+  const datas = [...new Set(vendas.map(v => v.dataVenda))].sort();
+  const datasFormatadas = datas.map(d => formatarDataHora(d));
+  const valores = datas.map(d => vendas.filter(v => v.dataVenda === d).reduce((acc, v) => acc + v.valor, 0));
+
+  if (graficoCalor) graficoCalor.destroy();
+  
   graficoCalor = new Chart(ctx, {
     type: 'bar',
     data: {
-      labels: datas,
-      datasets:[{label:"Vendas por Dia", data:valores, backgroundColor:valores.map(v=>`rgba(255,0,0,${v/Math.max(...valores)})`)}]
+      labels: datasFormatadas,
+      datasets: [{
+        label: "Vendas por Dia/Hora",
+        data: valores,
+        backgroundColor: valores.map(v => `rgba(255,0,0,${v / Math.max(...valores)})`)
+      }]
     },
-    options:{ 
+    options: {
       responsive: true,
       maintainAspectRatio: false,
-      scales:{ y:{ beginAtZero:true } },
+      scales: { 
+        y: { 
+          beginAtZero: true,
+          ticks: {
+            callback: function(value) {
+              return 'R$ ' + value.toFixed(2);
+            }
+          }
+        },
+        x: {
+          ticks: {
+            maxRotation: 45,
+            minRotation: 45,
+            font: {
+              size: window.innerWidth < 768 ? 8 : 10
+            }
+          }
+        }
+      },
       plugins: {
         legend: {
           labels: {
             font: {
               size: window.innerWidth < 768 ? 10 : 12
+            }
+          }
+        },
+        tooltip: {
+          callbacks: {
+            label: function(context) {
+              return 'R$ ' + context.parsed.y.toFixed(2);
             }
           }
         }

@@ -39,7 +39,7 @@ body {
   max-width: 1800px;
   padding: clamp(15px, 3vw, 30px);
   background: rgba(255, 255, 255, 0.92);
-  border-radius: clamp(12px, 2vw, 16px);
+  border-radius: clamp(12px, 2vw, 15px);
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
   line-height: 1.6;
   color: var(--text-primary);
@@ -82,7 +82,7 @@ header h1 {
   gap: clamp(8px, 2vw, 10px);
   font-weight: 600;
   padding: clamp(10px, 2vw, 12px) clamp(15px, 3vw, 20px);
-  border-radius: clamp(8px, 2vw, 12px);
+  border-radius: clamp(8px, 2vw, 8px);
   cursor: pointer;
   border: none;
   background: rgba(255, 255, 255, 0.15);
@@ -150,7 +150,7 @@ header h1 {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(min(250px, 100%), 1fr));
   margin-bottom: 15px;
-  gap: clamp(15px, 3vw, 20px);
+  gap: clamp(15px, 3vw, 10px);
 }
 .card {
   background: var(--card-bg);
@@ -214,7 +214,7 @@ header h1 {
 .filtro-group label {
   font-size: clamp(0.8rem, 2vw, 0.85rem);
   font-weight: 600;
-  margin-bottom: 6px;
+  margin-bottom: 4px;
   color: var(--text-secondary);
   display: flex;
   align-items: center;
@@ -262,7 +262,6 @@ header h1 {
 
 .filtros-section button:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
 }
 
 .checkbox-container {
@@ -300,8 +299,7 @@ header h1 {
 .graficos {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr));
-  gap: clamp(15px, 3vw, 20px);
-  margin-bottom: clamp(20px, 4vw, 30px);
+  gap: clamp(15px, 3vw, 10px);
 }
 
 .grafico-card {
@@ -312,7 +310,7 @@ header h1 {
   display: flex;
   flex-direction: column;
   min-height: 300px;
-  height: clamp(350px, 50vh, 400px);
+  height: clamp(350px, 50vh, 430px);
 }
 
 .grafico-card h2 {
@@ -338,7 +336,7 @@ header h1 {
   background: var(--card-bg);
   padding: clamp(15px, 3vw, 20px);
   border-radius: clamp(8px, 2vw, 12px);
-  margin-bottom: clamp(20px, 4vw, 30px);
+  margin-bottom: clamp(15px, 4vw, 10px);
   box-shadow: 0 4px 12px rgba(0,0,0,0.08);
 }
 
@@ -508,7 +506,6 @@ header h1 {
   background: var(--primary);
   color: white;
   padding: clamp(15px, 4vw, 25px) clamp(20px, 4vw, 30px);
-  border-radius: clamp(12px, 3vw, 16px) clamp(12px, 3vw, 16px) 0 0;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -579,7 +576,7 @@ header h1 {
 }
 
 #formVenda {
-  padding: clamp(20px, 4vw, 30px);
+  padding: clamp(20px, 4vw, 25px);
 }
 
 .form-section {
@@ -675,7 +672,6 @@ header h1 {
 
 .btn-salvar:hover {
   transform: translateY(-3px);
-  box-shadow: 0 8px 25px rgba(94, 156, 187, 0.4);
 }
 
 .btn-cancelar {
@@ -758,7 +754,6 @@ header h1 {
 
 .modal-content button:hover { 
   transform: translateY(-2px);
-  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
 }
 
 .close {
@@ -880,10 +875,8 @@ display: none;
   font-size: clamp(0.8rem, 2vw, 0.85rem);
   font-weight: 600;
   color: var(--text-primary);
-  margin-bottom: 8px;
   display: flex;
   align-items: center;
-  gap: 8px;
 }
 
 .sidebar-content .filtro-group input,
@@ -958,17 +951,17 @@ display: none;
 
 .botoes-filtro {
   display: flex;
-  flex-direction: column;
-  gap: clamp(10px, 2vw, 12px);
-  margin-top: 15px;
-  padding-top: 20px;
+  flex-direction: row;
+  gap: clamp(10px, 2vw, 8px);
+  margin-top: 5px;
+  padding-top: 15px;
   border-top: 2px solid var(--border);
 }
 
 .btn-filtro {
   width: 100%;
-  padding: clamp(12px, 3vw, 15px);
-  border-radius: clamp(8px, 2vw, 12px);
+  padding: clamp(12px, 3vw, 10px);
+  border-radius: clamp(8px, 2vw, 8px);
   border: none;
   background: var(--primary);
   color: white;
@@ -985,7 +978,6 @@ display: none;
 
 .btn-filtro:hover {
   transform: translateY(-3px);
-  box-shadow: 0 8px 20px rgba(94, 156, 187, 0.3);
 }
 
 .btn-filtro.btn-secundario {
@@ -994,7 +986,6 @@ display: none;
 
 .btn-filtro.btn-secundario:hover {
   background: linear-gradient(135deg, #495057 0%, #343a40 100%);
-  box-shadow: 0 8px 20px rgba(108, 117, 125, 0.3);
 }
 
 .conteudo-dashboard {
@@ -1294,6 +1285,155 @@ display: none;
   margin: 0 auto;
 }
 
+.graficos-container {
+  width: 100%;
+  margin-top: 1rem;
+}
+
+.grafico-linha-dupla {
+  display: grid;
+  grid-template-columns: 1fr 1.8fr;
+  gap: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.ranking-card {
+  display: flex;
+  flex-direction: column;
+}
+
+.ranking-card h3 {
+  margin-bottom: 1rem;
+  color: var(--text-primary);
+}
+
+.ranking-card ol {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  flex: 1;
+  overflow-y: auto;
+  max-height: 320px;
+}
+
+.ranking-card ol li {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 0.95rem;
+  transition: background 0.2s ease;
+}
+
+.ranking-card ol li:hover {
+  background: var(--bg-hover);
+}
+
+.ranking-posicao {
+  display: inline-block;
+  min-width: 30px;
+  font-weight: 700;
+  color: var(--accent-color);
+  font-size: 0.9rem;
+}
+
+.ranking-produto {
+  flex: 1;
+  font-weight: 500;
+}
+
+.ranking-valor {
+  font-weight: 600;
+  color: var(--success);
+  white-space: nowrap;
+}
+
+.ranking-card ol li:hover {
+  background: var(--bg-hover);
+}
+
+.ranking-card ol li .posicao {
+  display: inline-block;
+  width: 24px;
+  height: 24px;
+  background: var(--accent-color);
+  color: #fff;
+  text-align: center;
+  border-radius: 50%;
+  font-size: 0.75rem;
+  font-weight: 700;
+  line-height: 24px;
+  margin-right: 10px;
+}
+
+.ranking-card ol li .produto-nome {
+  flex: 1;
+  font-weight: 500;
+}
+
+.ranking-card ol li .produto-valor {
+  font-weight: 600;
+  color: var(--success);
+}
+
+.grafico-card canvas {
+  max-height: 300px;
+}
+
+.tabela-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.tabela-header h2 {
+  margin: 0;
+}
+
+.tabela-header .btn-add {
+    background: linear-gradient(135deg, #5e9cbb 100%, #2c3e50cc 0%);
+    color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.95rem;
+}
+
+.tabela-header .btn-add:hover {
+  transform: translateY(-3px);
+}
+
+@media (max-width: 768px) {
+  .tabela-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .tabela-header .btn-add {
+    justify-content: center;
+  }
+
+  .grafico-linha-dupla {
+    grid-template-columns: 1fr;
+    gap: 1.2rem;
+  }
+
+  
+  .grafico-card canvas {
+    max-height: 200px !important;
+  }
+}
+
 @media (min-width: 768px) {
   .dashboard-layout {
     flex-direction: row;
@@ -1302,7 +1442,7 @@ display: none;
   .sidebar-filtros {
     width: min(320px, 100%);
     position: sticky;
-    top: 150px;
+    top: 15px;
     height: fit-content;
   }
   
@@ -1316,6 +1456,15 @@ display: none;
   
   .conteudo-dashboard {
     width: calc(100% - min(320px, 100%) - 30px);
+  }
+}
+
+@media(max-width: 1300px){
+    .grafico-linha-dupla{
+        grid-template-columns: 1fr;
+  }
+    .ranking-card ol {
+    max-height: 330px;
   }
 }
 
@@ -1514,6 +1663,7 @@ display: none;
   .grafico-card.produtos-por-estado {
     grid-column: span 2;
   }
+
 }
 
 @media (max-width: 360px) {

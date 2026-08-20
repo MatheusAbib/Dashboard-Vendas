@@ -250,10 +250,34 @@ function preencherCards(vendas) {
     : "-";
 
   containerGeral.innerHTML = `
-    <div class="card"><h3>Total Vendas</h3><p>R$ ${totalVendas.toFixed(2)}</p></div>
-    <div class="card"><h3>Total Produtos</h3><p>${totalProdutos}</p></div>
-    <div class="card"><h3>Ticket Médio</h3><p>R$ ${ticketMedio}</p></div>
-    <div class="card"><h3>Categoria Mais Vendida</h3><p>${categoriaMaisVendida}</p></div>
+    <div class="card">
+      <div class="card-icon"><i class="bi bi-currency-dollar"></i></div>
+      <div class="card-info">
+        <h3>Total Vendas</h3>
+        <p>R$ ${totalVendas.toFixed(2)}</p>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-icon"><i class="bi bi-box-seam"></i></div>
+      <div class="card-info">
+        <h3>Total Produtos</h3>
+        <p>${totalProdutos}</p>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-icon"><i class="bi bi-receipt"></i></div>
+      <div class="card-info">
+        <h3>Ticket Médio</h3>
+        <p>R$ ${ticketMedio}</p>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-icon"><i class="bi bi-trophy"></i></div>
+      <div class="card-info">
+        <h3>Categoria Mais Vendida</h3>
+        <p>${categoriaMaisVendida}</p>
+      </div>
+    </div>
   `;
 }
 
@@ -531,6 +555,10 @@ function preencherMapaCalor(vendas) {
 
 function preencherGraficoProdutosRegiao(vendas) {
   const ctx = document.getElementById("graficoProdutosRegiao");
+  if (!ctx) {
+    console.warn('Elemento graficoProdutosRegiao não encontrado');
+    return;
+  }
 
   const vendasPorProdutoEstado = {};
   const produtosSet = new Set();
@@ -624,10 +652,10 @@ function exportarPDF() {
     cabecalho();
 
     const cards = [
-      { title: "Total Vendas", value: document.querySelector("#cards-metricas div:nth-child(1) p").innerText, color: [46, 204, 113] },
-      { title: "Total Produtos", value: document.querySelector("#cards-metricas div:nth-child(2) p").innerText, color: [231, 76, 60] },
-      { title: "Ticket Médio", value: document.querySelector("#cards-metricas div:nth-child(3) p").innerText, color: [241, 196, 15] },
-      { title: "Categoria Mais Vendida", value: document.querySelector("#cards-metricas div:nth-child(4) p").innerText, color: [52, 152, 219] }
+      { title: "Total Vendas", value: document.querySelector("#cards-metricas div:nth-child(1) p")?.innerText || "R$ 0,00", color: [46, 204, 113] },
+      { title: "Total Produtos", value: document.querySelector("#cards-metricas div:nth-child(2) p")?.innerText || "0", color: [231, 76, 60] },
+      { title: "Ticket Médio", value: document.querySelector("#cards-metricas div:nth-child(3) p")?.innerText || "R$ 0,00", color: [241, 196, 15] },
+      { title: "Categoria Mais Vendida", value: document.querySelector("#cards-metricas div:nth-child(4) p")?.innerText || "-", color: [52, 152, 219] }
     ];
 
     const cardWidth = (pageWidth - 80) / 4;
@@ -645,16 +673,30 @@ function exportarPDF() {
     });
     y += cardHeight + 20;
 
-    const graficoBarrasImg = document.getElementById("graficoBarras").toDataURL("image/png", 1.0);
-    const graficoPizzaImg = document.getElementById("graficoPizza").toDataURL("image/png", 1.0);
-    doc.addImage(graficoBarrasImg, 'PNG', 40, y, 250, 200);
-    doc.addImage(graficoPizzaImg, 'PNG', 300, y, 250, 200);
+    // Verificar se os gráficos existem antes de tentar exportar
+    const graficoBarrasEl = document.getElementById("graficoBarras");
+    const graficoPizzaEl = document.getElementById("graficoPizza");
+    const mapaCalorEl = document.getElementById("mapaCalor");
+    const graficoProdutosRegiaoEl = document.getElementById("graficoProdutosRegiao");
+
+    if (graficoBarrasEl) {
+      const graficoBarrasImg = graficoBarrasEl.toDataURL("image/png", 1.0);
+      doc.addImage(graficoBarrasImg, 'PNG', 40, y, 250, 200);
+    }
+    if (graficoPizzaEl) {
+      const graficoPizzaImg = graficoPizzaEl.toDataURL("image/png", 1.0);
+      doc.addImage(graficoPizzaImg, 'PNG', 300, y, 250, 200);
+    }
     y += 220;
 
-    const calorImg = document.getElementById("mapaCalor").toDataURL("image/png", 1.0);
-    const produtosRegiaoImg = document.getElementById("graficoProdutosRegiao").toDataURL("image/png", 1.0);
-    doc.addImage(calorImg, 'PNG', 40, y, 250, 200);
-    doc.addImage(produtosRegiaoImg, 'PNG', 300, y, 250, 200);
+    if (mapaCalorEl) {
+      const calorImg = mapaCalorEl.toDataURL("image/png", 1.0);
+      doc.addImage(calorImg, 'PNG', 40, y, 250, 200);
+    }
+    if (graficoProdutosRegiaoEl) {
+      const produtosRegiaoImg = graficoProdutosRegiaoEl.toDataURL("image/png", 1.0);
+      doc.addImage(produtosRegiaoImg, 'PNG', 300, y, 250, 200);
+    }
     y += 220;
 
     if (typeof doc.autoTable === "function") {
@@ -707,7 +749,6 @@ function exportarPDF() {
     console.error("Erro:", error);
   }
 }
-
 async function exportarExcel() {
   const vendas = todasVendas; 
   if (!vendas.length) {
@@ -1070,7 +1111,9 @@ function formatarCEP(cep) {
   return cep.substring(0, 5) + '-' + cep.substring(5);
 }
 
-carregarDashboard();
+document.addEventListener('DOMContentLoaded', function() {
+    carregarDashboard();
+});
 
 
 document.addEventListener('keydown', function(e) {

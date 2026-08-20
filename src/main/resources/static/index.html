@@ -110,22 +110,22 @@
 
     <section class="graficos">
       <div class="grafico-card">
-        <h2>Vendas por Produto</h2>
+        <h2><i class="bi bi-bar-chart"></i> Vendas por Produto</h2>
         <canvas id="graficoBarras"></canvas>
       </div>
 
       <div class="grafico-card">
-        <h2>Vendas por Categoria</h2>
+        <h2><i class="bi bi-pie-chart"></i> Vendas por Categoria</h2>
         <canvas id="graficoPizza"></canvas>
       </div>
 
       <div class="grafico-card">
-        <h2>Mapa de Calor de Vendas</h2>
+        <h2><i class="bi bi-thermometer-half"></i> Mapa de Calor de Vendas</h2>
         <canvas id="mapaCalor"></canvas>
       </div>
 
       <div class="grafico-card">
-        <h2>Mapa de Vendas</h2>
+        <h2><i class="bi bi-geo-alt"></i> Mapa de Vendas</h2>
         <div id="mapaVendas"></div>
       </div>
     </section>
@@ -138,37 +138,37 @@
         </div>
 
         <div class="grafico-card">
-          <h2>Vendas por Estado</h2>
+          <h2><i class="bi bi-map"></i> Vendas por Estado</h2>
           <canvas id="graficoVendasEstado"></canvas>
         </div>
       </div>
     </section>
 
-<section class="tabela">
-  <div class="tabela-header">
-    <h2><i class="bi bi-table"></i> Vendas Registradas</h2>
-    <button onclick="abrirFormVenda()" class="btn-add">
-      <i class="bi bi-plus-circle"></i> Nova Venda
-    </button>
-  </div>
-  <table>
-    <thead>
-      <tr>
-        <th>ID</th>
-        <th>Produto</th>
-        <th>Categoria</th>
-        <th>Quantidade</th>
-        <th>Valor</th>
-        <th>Cidade</th>
-        <th>Estado</th>
-        <th>CEP</th>
-        <th>Data</th>
-        <th>Ações</th>
-      </tr>
-    </thead>
-    <tbody id="tabela-vendas"></tbody>
-  </table>
-</section>
+    <section class="tabela">
+      <div class="tabela-header">
+        <h2><i class="bi bi-table"></i> Vendas Registradas</h2>
+        <button onclick="abrirFormVenda()" class="btn-add">
+          <i class="bi bi-plus-circle"></i> Nova Venda
+        </button>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Produto</th>
+            <th>Categoria</th>
+            <th>Quantidade</th>
+            <th>Valor</th>
+            <th>Cidade</th>
+            <th>Estado</th>
+            <th>CEP</th>
+            <th>Data</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody id="tabela-vendas"></tbody>
+      </table>
+    </section>
   </main>
 </div>
 

@@ -2,3 +2,5 @@ node_modules/
 target/
 *.mp4
 cl
+# Local Netlify folder
+.netlify

@@ -1,4 +1,4 @@
-const API_URL = '/api/vendas';
+const API_URL = '/.netlify/functions/api';
 let graficoBarras, graficoPizza, graficoCalor, graficoProdutosRegiao;
 let todasVendas = [];
 let graficoVendasEstado;

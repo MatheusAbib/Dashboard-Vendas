@@ -1,55 +1,78 @@
-# Dashboard de Vendas 📊
+# 📊 Dashboard de Vendas
 
-## 📋 Descrição do Projeto
-O **Dashboard de Vendas** é uma aplicação web para monitoramento de vendas, com visualização de métricas, gráficos, mapas e ranking de produtos. Permite cadastrar, editar e excluir vendas, além de aplicar filtros por data, categoria e localização geográfica.  
+## 📋 Sobre o Projeto
 
-A aplicação é construída utilizando **Java Spring Boot** no back-end, **MySQL** como banco de dados e **HTML, CSS e JavaScript** no front-end. Gráficos são gerados com **Chart.js**, mapas com **Leaflet**, e exportações de relatórios em **Excel** e **PDF** são suportadas.
+O **Dashboard de Vendas** é uma aplicação web completa para monitoramento e gestão de vendas. Com uma interface intuitiva e responsiva, permite visualizar métricas em tempo real, analisar gráficos interativos, gerenciar vendas e exportar relatórios.
+
+> Acesse o projeto online: (https://dashboard-vendas-node.netlify.app)
 
 ---
 
 ## ✨ Funcionalidades
-- 📝 **Cadastro, edição e exclusão de vendas**
-- 🔍 **Filtragem por:**
-  - 📅 Data
-  - 🏷️ Categoria  
-  - 🌍 Localização (país, estado, cidade)
-- 📊 **Gráficos interativos:**
-  - 📈 Vendas por produto (barra)
-  - 🥧 Vendas por categoria (pizza)
-  - 📉 Produtos mais vendidos por estado (barra horizontal)
-  - 🔥 Mapa de calor de vendas por dia
-  - 🗺️ Mapa de vendas com geolocalização
-- 🏆 **Ranking de produtos por valor de vendas**
-- 📤 **Exportação de relatórios:**
-  - 📄 Excel com métricas e tabela completa
-  - 🖨️ PDF com gráficos e tabela
-- 💬 **Sistema de mensagens para feedback do usuário**
+
+### 📝 Gestão de Vendas
+- Cadastro, edição e exclusão de vendas
+- Formulário intuitivo com validação de dados
+- Feedback visual para todas as ações
+
+### 🔍 Filtros Inteligentes
+- Filtragem por período (data inicial/final)
+- Filtro por categoria de produto
+- Filtros geográficos (país, estado, cidade)
+- Filtro por séries (categorias selecionáveis)
+
+### 📊 Visualização de Dados
+- **Cards de Métricas:** Total de vendas, total de produtos, ticket médio e categoria mais vendida
+- **Gráfico de Barras:** Vendas por produto
+- **Gráfico de Pizza:** Distribuição de vendas por categoria
+- **Mapa de Calor:** Vendas por dia/hora
+- **Mapa Interativo:** Visualização geográfica das vendas com Leaflet
+- **Gráfico de Vendas por Estado:** Distribuição regional
+- **Ranking de Produtos:** Top 15 produtos mais vendidos
+
+### 📤 Exportação de Relatórios
+- **Excel:** Exporta métricas e tabela completa de vendas
+- **PDF:** Relatório completo com gráficos e tabela
+
+### 💬 Sistema de Feedback
+- Notificações em tempo real
+- Loader para operações assíncronas
+- Modais de confirmação para ações destrutivas
+
+### 📱 Design Responsivo
+- Interface adaptada para todos os dispositivos
+- Sidebar de filtros recolhível no mobile
+- Gráficos com toggle para melhor visualização em telas pequenas
 
 ---
 
 ## 🛠️ Tecnologias Utilizadas
 
-### ⚙️ **Back-end:**
-![Java](https://img.shields.io/badge/Java-ED8B00?style=flat&logo=java&logoColor=white)
-![Spring Boot](https://img.shields.io/badge/Spring_Boot-6DB33F?style=flat&logo=spring-boot&logoColor=white)
-![Spring Data JPA](https://img.shields.io/badge/Spring_Data_JPA-6DB33F?style=flat&logo=spring&logoColor=white)
-![REST API](https://img.shields.io/badge/REST_API-FF6C37?style=flat&logo=rest&logoColor=white)
-![MySQL](https://img.shields.io/badge/MySQL-4479A1?style=flat&logo=mysql&logoColor=white)
+### Backend
+| Tecnologia | Descrição |
+|------------|-----------|
+| **Node.js** | Ambiente de execução JavaScript |
+| **Express** | Framework web para Node.js |
+| **MySQL** | Banco de dados relacional |
+| **CORS** | Middleware para requisições cross-origin |
 
-### 🎨 **Front-end:**
-![HTML5](https://img.shields.io/badge/HTML5-E34F26?style=flat&logo=html5&logoColor=white)
-![CSS3](https://img.shields.io/badge/CSS3-1572B6?style=flat&logo=css3&logoColor=white)
-![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=flat&logo=javascript&logoColor=black)
-![Chart.js](https://img.shields.io/badge/Chart.js-FF6384?style=flat&logo=chart.js&logoColor=white)
-![Leaflet](https://img.shields.io/badge/Leaflet-199900?style=flat&logo=leaflet&logoColor=white)
+### Frontend
+| Tecnologia | Descrição |
+|------------|-----------|
+| **HTML5 / CSS3** | Estrutura e estilização |
+| **JavaScript (ES6+)** | Lógica da aplicação |
+| **Chart.js** | Criação de gráficos interativos |
+| **Leaflet** | Mapas interativos |
+| **jsPDF** | Exportação de PDF |
+| **SheetJS (XLSX)** | Exportação de Excel |
+| **Bootstrap Icons** | Ícones vetoriais |
+| **Font Awesome** | Ícones adicionais |
 
-### 📦 **Bibliotecas:**
-![jsPDF](https://img.shields.io/badge/jsPDF-FF6C37?style=flat&logo=pdf&logoColor=white)
-![SheetJS](https://img.shields.io/badge/SheetJS-217346?style=flat&logo=microsoft-excel&logoColor=white)
-![Bootstrap Icons](https://img.shields.io/badge/Bootstrap_Icons-7952B3?style=flat&logo=bootstrap&logoColor=white)
-![Font Awesome](https://img.shields.io/badge/Font_Awesome-528DD7?style=flat&logo=font-awesome&logoColor=white)
+### Infraestrutura
+| Tecnologia | Descrição |
+|------------|-----------|
+| **Netlify** | Hospedagem do frontend |
+| **DigitalOcean** | Hospedagem do backend |
+| **PM2** | Gerenciamento de processos Node.js |
 
-### 🔧 **Outras ferramentas:**
-![VS Code](https://img.shields.io/badge/VS_Code-007ACC?style=flat&logo=visual-studio-code&logoColor=white)
-![phpMyAdmin](https://img.shields.io/badge/phpMyAdmin-6C78AF?style=flat&logo=phpmyadmin&logoColor=white)
-![MySQL Workbench](https://img.shields.io/badge/MySQL_Workbench-4479A1?style=flat&logo=mysql&logoColor=white)
+---

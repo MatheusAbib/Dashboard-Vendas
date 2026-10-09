@@ -1,9 +1,15 @@
 const API_URL = '/.netlify/functions/api';
-let graficoBarras, graficoPizza, graficoCalor, graficoProdutosRegiao;
+
+//local
+// const API_URL = '/api/vendas';
+
+let graficoRadar, graficoPizza, graficoArea, graficoProdutosRegiao;
 let todasVendas = [];
 let graficoVendasEstado;
 
-
+const COR_PRIMARIA = '#5e9cbb';
+const COR_PRIMARIA_DARK = '#2a5298';
+const COR_ACCENT = '#8d8142';
 
 function preencherGraficoVendasEstado(vendas) {
   const ctx = document.getElementById("graficoVendasEstado");
@@ -27,8 +33,8 @@ function preencherGraficoVendasEstado(vendas) {
       datasets: [{
         label: 'Vendas por Estado (R$)',
         data: valores,
-        backgroundColor: 'rgba(54, 162, 235, 0.7)',
-        borderColor: 'rgba(54, 162, 235, 1)',
+        backgroundColor: 'rgba(94, 156, 187, 0.7)',
+        borderColor: COR_PRIMARIA_DARK,
         borderWidth: 1,
         borderRadius: 4
       }]
@@ -122,10 +128,10 @@ async function carregarDashboard() {
     preencherCheckboxCategorias(vendas);
     preencherGraficoVendasEstado(vendas);
 
-    preencherGraficoBarras(vendas);
+    preencherGraficoRadar(vendas);
     preencherGraficoPizza(vendas);
     preencherRanking(vendas);
-    preencherMapaCalor(vendas);
+    preencherGraficoArea(vendas);
     preencherGraficoProdutosRegiao(vendas);
     preencherMapaVendas(vendas);
 
@@ -281,24 +287,61 @@ function preencherCards(vendas) {
   `;
 }
 
-function preencherGraficoBarras(vendas) {
+function preencherGraficoRadar(vendas) {
   const ctx = document.getElementById("graficoBarras");
-  const labels = vendas.map(v=>v.produto);
-  const data = vendas.map(v=>v.valor);
+  const labels = vendas.map(v => v.produto);
+  const data = vendas.map(v => v.valor);
 
-  if(graficoBarras) graficoBarras.destroy();
-  graficoBarras = new Chart(ctx, {
-    type: "bar",
-    data: { labels, datasets:[{label:"Valor (R$)", data, backgroundColor:"rgba(75,192,192,0.6)"}] },
-    options: { 
+  if (graficoRadar) graficoRadar.destroy();
+  graficoRadar = new Chart(ctx, {
+    type: "radar",
+    data: {
+      labels,
+      datasets: [{
+        label: "Valor (R$)",
+        data,
+        backgroundColor: "rgba(94, 156, 187, 0.25)",
+        borderColor: COR_PRIMARIA_DARK,
+        borderWidth: 2,
+        pointBackgroundColor: COR_PRIMARIA,
+        pointBorderColor: "#ffffff",
+        pointBorderWidth: 1,
+        pointRadius: window.innerWidth < 768 ? 2 : 3,
+        pointHoverRadius: 5
+      }]
+    },
+    options: {
       responsive: true,
       maintainAspectRatio: false,
-      scales:{ y:{beginAtZero:true} },
+      scales: {
+        r: {
+          beginAtZero: true,
+          angleLines: { color: 'rgba(0,0,0,0.08)' },
+          grid: { color: 'rgba(0,0,0,0.08)' },
+          pointLabels: {
+            font: { size: window.innerWidth < 768 ? 8 : 10 },
+            color: '#4a5a6a'
+          },
+          ticks: {
+            backdropColor: 'transparent',
+            color: '#4a5a6a',
+            font: { size: 9 },
+            callback: function(value) {
+              return 'R$ ' + value;
+            }
+          }
+        }
+      },
       plugins: {
         legend: {
           labels: {
-            font: {
-              size: window.innerWidth < 768 ? 10 : 12
+            font: { size: window.innerWidth < 768 ? 10 : 12 }
+          }
+        },
+        tooltip: {
+          callbacks: {
+            label: function(context) {
+              return 'R$ ' + context.parsed.r.toFixed(2);
             }
           }
         }
@@ -315,7 +358,7 @@ function preencherGraficoPizza(vendas) {
   if(graficoPizza) graficoPizza.destroy();
   graficoPizza = new Chart(ctx, {
     type:"pie",
-    data:{ labels:categorias, datasets:[{data:valores, backgroundColor:["#4CAF50","#FF6384","#36A2EB","#FFCE56"]}] },
+    data:{ labels:categorias, datasets:[{data:valores, backgroundColor:["#5e9cbb","#2a5298","#8d8142","#4CAF50","#FF6384","#36A2EB","#FFCE56"]}] },
     options:{ 
       responsive: true,
       maintainAspectRatio: false,
@@ -407,10 +450,10 @@ async function aplicarTodosFiltros() {
 
     preencherTabela(filtrado);
     preencherCards(filtrado);
-    preencherGraficoBarras(filtrado);
+    preencherGraficoRadar(filtrado);
     preencherGraficoPizza(filtrado);
     preencherRanking(filtrado);
-    preencherMapaCalor(filtrado);
+    preencherGraficoArea(filtrado);
     preencherGraficoProdutosRegiao(filtrado);
     preencherMapaVendas(filtrado);
     preencherGraficoVendasEstado(filtrado);
@@ -445,10 +488,10 @@ function filtrarSeries() {
   
   preencherCards(dataFiltrada);
   preencherTabela(dataFiltrada);
-  preencherGraficoBarras(dataFiltrada);
+  preencherGraficoRadar(dataFiltrada);
   preencherGraficoPizza(dataFiltrada);
   preencherRanking(dataFiltrada);
-  preencherMapaCalor(dataFiltrada);
+  preencherGraficoArea(dataFiltrada);
   preencherGraficoProdutosRegiao(dataFiltrada);
   preencherMapaVendas(dataFiltrada);
   preencherGraficoVendasEstado(dataFiltrada);
@@ -481,7 +524,7 @@ function preencherRanking(vendas) {
     `;
   });
 }
-function preencherMapaCalor(vendas) {
+function preencherGraficoArea(vendas) {
   const ctx = document.getElementById("mapaCalor");
   
   function formatarDataHora(dataISO) {
@@ -499,21 +542,38 @@ function preencherMapaCalor(vendas) {
   const datasFormatadas = datas.map(d => formatarDataHora(d));
   const valores = datas.map(d => vendas.filter(v => v.dataVenda === d).reduce((acc, v) => acc + v.valor, 0));
 
-  if (graficoCalor) graficoCalor.destroy();
+  if (graficoArea) graficoArea.destroy();
+
+  const gradient = ctx.getContext('2d').createLinearGradient(0, 0, 0, 300);
+  gradient.addColorStop(0, 'rgba(94, 156, 187, 0.55)');
+  gradient.addColorStop(1, 'rgba(42, 82, 152, 0.05)');
   
-  graficoCalor = new Chart(ctx, {
-    type: 'bar',
+  graficoArea = new Chart(ctx, {
+    type: 'line',
     data: {
       labels: datasFormatadas,
       datasets: [{
         label: "Vendas por Dia/Hora",
         data: valores,
-        backgroundColor: valores.map(v => `rgba(255,0,0,${v / Math.max(...valores)})`)
+        fill: true,
+        backgroundColor: gradient,
+        borderColor: COR_PRIMARIA_DARK,
+        borderWidth: 2,
+        tension: 0.35,
+        pointBackgroundColor: COR_PRIMARIA,
+        pointBorderColor: '#ffffff',
+        pointBorderWidth: 1,
+        pointRadius: window.innerWidth < 768 ? 2 : 3,
+        pointHoverRadius: 6
       }]
     },
     options: {
       responsive: true,
       maintainAspectRatio: false,
+      interaction: {
+        mode: 'index',
+        intersect: false
+      },
       scales: { 
         y: { 
           beginAtZero: true,
@@ -633,7 +693,7 @@ function exportarPDF() {
     const pageHeight = doc.internal.pageSize.getHeight();
 
     function cabecalho() {
-      doc.setFillColor(52, 152, 219);
+      doc.setFillColor(94, 156, 187);
       doc.rect(0, 0, pageWidth, 50, 'F'); 
       doc.setFontSize(18);
       doc.setTextColor(255, 255, 255);
@@ -641,7 +701,7 @@ function exportarPDF() {
     }
 
     function rodape(paginaAtual, totalPaginas) {
-      doc.setFillColor(52, 73, 94);
+      doc.setFillColor(42, 82, 152);
       doc.rect(0, pageHeight - 30, pageWidth, 30, 'F');
       doc.setFontSize(10);
       doc.setTextColor(255, 255, 255);
@@ -655,7 +715,7 @@ function exportarPDF() {
       { title: "Total Vendas", value: document.querySelector("#cards-metricas div:nth-child(1) p")?.innerText || "R$ 0,00", color: [46, 204, 113] },
       { title: "Total Produtos", value: document.querySelector("#cards-metricas div:nth-child(2) p")?.innerText || "0", color: [231, 76, 60] },
       { title: "Ticket Médio", value: document.querySelector("#cards-metricas div:nth-child(3) p")?.innerText || "R$ 0,00", color: [241, 196, 15] },
-      { title: "Categoria Mais Vendida", value: document.querySelector("#cards-metricas div:nth-child(4) p")?.innerText || "-", color: [52, 152, 219] }
+      { title: "Categoria Mais Vendida", value: document.querySelector("#cards-metricas div:nth-child(4) p")?.innerText || "-", color: [94, 156, 187] }
     ];
 
     const cardWidth = (pageWidth - 80) / 4;
@@ -673,7 +733,6 @@ function exportarPDF() {
     });
     y += cardHeight + 20;
 
-    // Verificar se os gráficos existem antes de tentar exportar
     const graficoBarrasEl = document.getElementById("graficoBarras");
     const graficoPizzaEl = document.getElementById("graficoPizza");
     const mapaCalorEl = document.getElementById("mapaCalor");
@@ -707,7 +766,7 @@ function exportarPDF() {
         html: '#tabela-vendas', 
         startY: 70, 
         theme: 'grid', 
-        headStyles: { fillColor:[52,73,94], textColor:255 },
+        headStyles: { fillColor:[42,82,152], textColor:255 },
         styles: { fontSize: 9, cellPadding: 2 },
         didDrawPage: function (data) {
           const paginaAtual = doc.internal.getCurrentPageInfo().pageNumber;
@@ -1203,10 +1262,12 @@ function mostrarNotificacao(titulo, mensagem, tipo = "info", duracao = 5000) {
 }
 
 window.addEventListener('resize', function() {
-  if (graficoBarras) {
-    graficoBarras.resize();
-    graficoBarras.options.plugins.legend.labels.font.size = window.innerWidth < 768 ? 10 : 12;
-    graficoBarras.update();
+  if (graficoRadar) {
+    graficoRadar.resize();
+    graficoRadar.options.plugins.legend.labels.font.size = window.innerWidth < 768 ? 10 : 12;
+    graficoRadar.options.scales.r.pointLabels.font.size = window.innerWidth < 768 ? 8 : 10;
+    graficoRadar.options.scales.r.pointLabels.font.size = window.innerWidth < 768 ? 8 : 10;
+    graficoRadar.update();
   }
   if (graficoPizza) {
     graficoPizza.resize();
@@ -1214,10 +1275,10 @@ window.addEventListener('resize', function() {
     graficoPizza.options.plugins.legend.labels.font.size = window.innerWidth < 768 ? 10 : 12;
     graficoPizza.update();
   }
-  if (graficoCalor) {
-    graficoCalor.resize();
-    graficoCalor.options.plugins.legend.labels.font.size = window.innerWidth < 768 ? 10 : 12;
-    graficoCalor.update();
+  if (graficoArea) {
+    graficoArea.resize();
+    graficoArea.options.plugins.legend.labels.font.size = window.innerWidth < 768 ? 10 : 12;
+    graficoArea.update();
   }
   if (graficoProdutosRegiao) {
     graficoProdutosRegiao.resize();
@@ -1236,9 +1297,9 @@ window.addEventListener('resize', function() {
 
 window.addEventListener('orientationchange', function() {
   setTimeout(function() {
-    if (graficoBarras) graficoBarras.resize();
+    if (graficoRadar) graficoRadar.resize();
     if (graficoPizza) graficoPizza.resize();
-    if (graficoCalor) graficoCalor.resize();
+    if (graficoArea) graficoArea.resize();
     if (graficoProdutosRegiao) graficoProdutosRegiao.resize();
     
     const mapaElement = document.getElementById('mapaVendas');

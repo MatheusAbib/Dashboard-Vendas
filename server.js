@@ -10,7 +10,7 @@ const PORT = process.env.PORT || 3001;
 
 app.use(cors());
 app.use(express.json());
-app.use(express.static(path.join(__dirname, 'src', 'main', 'resources', 'static')));
+app.use(express.static(path.join(__dirname, 'public')));
 
 const vendaRoutes = require('./routes/vendaRoutes');
 app.use('/api/vendas', vendaRoutes);

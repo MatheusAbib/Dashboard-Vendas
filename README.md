@@ -23,9 +23,9 @@ O **Dashboard de Vendas** é uma aplicação web completa para monitoramento e g
 
 ### 📊 Visualização de Dados
 - **Cards de Métricas:** Total de vendas, total de produtos, ticket médio e categoria mais vendida
-- **Gráfico de Barras:** Vendas por produto
+- **Gráfico Radar:** Vendas por produto
 - **Gráfico de Pizza:** Distribuição de vendas por categoria
-- **Mapa de Calor:** Vendas por dia/hora
+- **Gráfico de Área:** Evolução de vendas por dia/hora
 - **Mapa Interativo:** Visualização geográfica das vendas com Leaflet
 - **Gráfico de Vendas por Estado:** Distribuição regional
 - **Ranking de Produtos:** Top 15 produtos mais vendidos

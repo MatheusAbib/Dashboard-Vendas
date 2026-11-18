@@ -1,305 +1,1087 @@
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#182a3c">
+  <meta name="description" content="Dashboard de Vendas - gestão e inteligência comercial.">
   <title>Dashboard de Vendas</title>
-  
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="icon" type="image/x-icon" href="imagens/dashboard.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <link rel="stylesheet" href="css/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.29/jspdf.plugin.autotable.min.js"></script>
-  
-  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-
-  <link rel="icon" type="image/x-icon" href="imagens/dashboard.png">
-
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
-  
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-  
-  <link rel="stylesheet" href="css/style.css">
-
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 </head>
 <body>
-
-<header>
-  <h1><i class="bi bi-bar-chart-fill"></i> Dashboard de Vendas</h1>
-  
-  <div class="header-buttons">
-    <button onclick="abrirFormVenda()" class="btn-add">
-      <i class="bi bi-plus-circle"></i> Nova Venda
-    </button>
-    
-    <button onclick="exportarExcel()" class="btn-add">
-      <i class="bi bi-file-earmark-excel"></i> Exportar Excel
-    </button>
-    
-    <button onclick="exportarPDF()" class="btn-add">
-      <i class="bi bi-file-earmark-pdf"></i> Exportar PDF
-    </button>
-  </div>
-</header>
-
-<div id="mensagens" class="mensagens"></div>
-
-<div class="dashboard-layout">
-  <aside class="sidebar-filtros">
-    <div class="sidebar-header" onclick="toggleSidebar()">
-      <h3><i class="bi bi-filter"></i> Filtros</h3>
-      <i id="botao" class="bi bi-chevron-down d-md-none"></i>
-    </div>
-    
-    <div class="sidebar-content">
-      <div class="filtro-group">
-        <label for="data-inicial"><i class="bi bi-calendar"></i> Data Inicial</label>
-        <input type="date" id="data-inicial">
-      </div>
-      
-      <div class="filtro-group">
-        <label for="data-final"><i class="bi bi-calendar"></i> Data Final</label>
-        <input type="date" id="data-final">
-      </div>
-      
-      <div class="filtro-group">
-        <label for="categoria"><i class="bi bi-tags"></i> Categoria</label>
-        <select id="categoria">
-          <option value="">Todas as categorias</option>
-        </select>
-      </div>
-      
-      <div class="filtro-group">
-        <label for="filtro-pais"><i class="bi bi-globe"></i> País</label>
-        <select id="filtro-pais">
-          <option value="">Todos os países</option>
-        </select>
-      </div>
-      
-      <div class="filtro-group">
-        <label for="filtro-estado"><i class="bi bi-geo-alt"></i> Estado</label>
-        <select id="filtro-estado">
-          <option value="">Todos os estados</option>
-        </select>
-      </div>
-      
-      <div class="filtro-group">
-        <label for="filtro-cidade"><i class="bi bi-buildings"></i> Cidade</label>
-        <select id="filtro-cidade">
-          <option value="">Todas as cidades</option>
-        </select>
-      </div>
-      
-      <div class="filtro-group series" style="display: none;">
-        <label><i class="bi bi-graph-up"></i> Filtrar Séries</label>
-        <div class="checkbox-container" id="checkbox-categorias"></div>
-      </div>
-      
-      <div class="botoes-filtro">
-        <button onclick="aplicarTodosFiltros()" class="btn-filtro">
-          <i class="bi bi-funnel"></i> Aplicar
-        </button>
-        <button onclick="limparTodosFiltros()" class="btn-filtro btn-secundario">
-          <i class="bi bi-x-circle"></i> Limpar
-        </button>
-      </div>
-    </div>
-  </aside>
-
-  <main class="conteudo-dashboard">
-    <section class="cards" id="cards-metricas"></section>
-
-    <section class="graficos">
-      <div class="grafico-card">
-        <h2><i class="bi bi-pentagon"></i> Vendas por Produto (Radar)</h2>
-        <canvas id="graficoBarras"></canvas>
-      </div>
-
-      <div class="grafico-card">
-        <h2><i class="bi bi-pie-chart"></i> Vendas por Categoria</h2>
-        <canvas id="graficoPizza"></canvas>
-      </div>
-
-      <div class="grafico-card">
-        <h2><i class="bi bi-graph-up-arrow"></i> Evolução de Vendas</h2>
-        <canvas id="mapaCalor"></canvas>
-      </div>
-
-      <div class="grafico-card">
-        <h2><i class="bi bi-geo-alt"></i> Mapa de Vendas</h2>
-        <div id="mapaVendas"></div>
-      </div>
-    </section>
-
-    <section class="graficos-container">
-      <div class="grafico-linha-dupla">
-        <div class="grafico-card ranking-card">
-          <h3><i class="bi bi-trophy"></i> Ranking de Produtos</h3>
-          <ol id="ranking-produtos"></ol>
+  <div class="app-shell">
+    <aside class="app-sidebar" id="appSidebar">
+      <div class="brand">
+        <div class="brand-symbol">
+          <i class="bi bi-columns-gap"></i>
         </div>
-
-        <div class="grafico-card">
-          <h2><i class="bi bi-map"></i> Vendas por Estado</h2>
-          <canvas id="graficoVendasEstado"></canvas>
+        <div class="brand-copy">
+          <strong>VENDAS</strong>
+          <small>CENTRAL COMERCIAL</small>
         </div>
       </div>
-    </section>
 
-    <section class="tabela">
-      <div class="tabela-header">
-        <h2><i class="bi bi-table"></i> Vendas Registradas</h2>
-        <button onclick="abrirFormVenda()" class="btn-add">
-          <i class="bi bi-plus-circle"></i> Nova Venda
-        </button>
-      </div>
-      <table>
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Produto</th>
-            <th>Categoria</th>
-            <th>Quantidade</th>
-            <th>Valor</th>
-            <th>Cidade</th>
-            <th>Estado</th>
-            <th>CEP</th>
-            <th>Data</th>
-            <th>Ações</th>
-          </tr>
-        </thead>
-        <tbody id="tabela-vendas"></tbody>
-      </table>
-    </section>
-  </main>
-</div>
+      <nav class="sidebar-navigation" aria-label="Navegação principal">
+        <div class="navigation-group">
+          <span class="navigation-label">PAINEL DE CONTROLE</span>
+          <a href="#visao-geral" class="navigation-link active">
+            <i class="bi bi-grid-1x2"></i>
+            <span>Visão geral</span>
+            <i class="bi bi-chevron-right navigation-arrow"></i>
+          </a>
+          <a href="#analises" class="navigation-link">
+            <i class="bi bi-bar-chart-line"></i>
+            <span>Análises</span>
+          </a>
+          <a href="#comparativos" class="navigation-link">
+            <i class="bi bi-arrow-left-right"></i>
+            <span>Comparativos</span>
+          </a>
+          <a href="#distribuicao" class="navigation-link">
+            <i class="bi bi-globe-americas"></i>
+            <span>Distribuição</span>
+          </a>
+          <a href="#produtos" class="navigation-link">
+            <i class="bi bi-box-seam"></i>
+            <span>Produtos</span>
+          </a>
+          <a href="#registros" class="navigation-link">
+            <i class="bi bi-receipt-cutoff"></i>
+            <span>Registros</span>
+          </a>
+        </div>
 
-<div id="formVendaModal" class="modal" style="display:none;">
-  <div class="modal-content-venda">
-    <div class="modal-header-venda">
-      <h2><i class="bi bi-cart-plus"></i> <span id="formTitulo">Cadastrar Venda</span></h2>
-      <button class="close-venda" onclick="fecharFormVenda()">
-        <i class="bi bi-x-lg"></i>
-      </button>
-    </div>
-    
-    <form id="formVenda">
-      <input type="hidden" id="venda-id">
-      
-      <div class="form-section">
-        <h3 class="section-title"><i class="bi bi-box-seam"></i> Informações do Produto</h3>
-        <div class="form-grid">
-          <div class="form-group-venda">
-            <label for="produto"><i class="bi bi-tag"></i> Produto</label>
-            <input type="text" id="produto" required placeholder="Nome do produto">
+        <div class="navigation-group">
+          <span class="navigation-label">FERRAMENTAS</span>
+          <button type="button" class="navigation-link navigation-button" onclick="abrirFormVenda()">
+            <i class="bi bi-plus-square"></i>
+            <span>Cadastrar venda</span>
+          </button>
+          <button type="button" class="navigation-link navigation-button" id="abrirRelatorios">
+            <i class="bi bi-file-earmark-bar-graph"></i>
+            <span>Relatórios</span>
+          </button>
+          <button type="button" class="navigation-link navigation-button" onclick="exportarExcel()">
+            <i class="bi bi-file-earmark-spreadsheet"></i>
+            <span>Exportar Excel</span>
+          </button>
+          <button type="button" class="navigation-link navigation-button" onclick="exportarPDF()">
+            <i class="bi bi-file-earmark-pdf"></i>
+            <span>Exportar PDF</span>
+          </button>
+        </div>
+      </nav>
+
+      <div class="sidebar-bottom">
+        <div class="sidebar-status">
+          <span class="status-indicator"></span>
+          <div>
+            <strong>Central de dados</strong>
+            <small>Gestão comercial</small>
           </div>
-          <div class="form-group-venda">
-            <label for="categoriaForm"><i class="bi bi-grid-3x3"></i> Categoria</label>
-            <input type="text" id="categoriaForm" required placeholder="Categoria do produto">
-          </div>
-          <div class="form-group-venda">
-            <label for="quantidade"><i class="bi bi-hash"></i> Quantidade</label>
-            <input type="number" id="quantidade" required placeholder="0" min="1">
-          </div>
-          <div class="form-group-venda">
-            <label for="valor"><i class="bi bi-currency-dollar"></i> Valor (R$)</label>
-            <input type="number" step="0.01" id="valor" required placeholder="0.00" min="0">
-          </div>
+          <i class="bi bi-database-check"></i>
+        </div>
+        <div class="sidebar-version">
+          <span>Dashboard de Vendas</span>
+          <span>2026</span>
         </div>
       </div>
-      
-      <div class="form-section">
-        <h3 class="section-title"><i class="bi bi-geo-alt"></i> Localização</h3>
-        <div class="form-grid">
-          <div class="form-group-venda">
-            <label for="cidade"><i class="bi bi-buildings"></i> Cidade</label>
-            <input type="text" id="cidade" placeholder="Nome da cidade">
-          </div>
-          <div class="form-group-venda">
-            <label for="estado"><i class="bi bi-geo"></i> Estado</label>
-            <select id="estado" class="select-estado">
-              <option value="">Selecione um estado</option>
-              <option value="AC">Acre (AC)</option>
-              <option value="AL">Alagoas (AL)</option>
-              <option value="AP">Amapá (AP)</option>
-              <option value="AM">Amazonas (AM)</option>
-              <option value="BA">Bahia (BA)</option>
-              <option value="CE">Ceará (CE)</option>
-              <option value="DF">Distrito Federal (DF)</option>
-              <option value="ES">Espírito Santo (ES)</option>
-              <option value="GO">Goiás (GO)</option>
-              <option value="MA">Maranhão (MA)</option>
-              <option value="MT">Mato Grosso (MT)</option>
-              <option value="MS">Mato Grosso do Sul (MS)</option>
-              <option value="MG">Minas Gerais (MG)</option>
-              <option value="PA">Pará (PA)</option>
-              <option value="PB">Paraíba (PB)</option>
-              <option value="PR">Paraná (PR)</option>
-              <option value="PE">Pernambuco (PE)</option>
-              <option value="PI">Piauí (PI)</option>
-              <option value="RJ">Rio de Janeiro (RJ)</option>
-              <option value="RN">Rio Grande do Norte (RN)</option>
-              <option value="RS">Rio Grande do Sul (RS)</option>
-              <option value="RO">Rondônia (RO)</option>
-              <option value="RR">Roraima (RR)</option>
-              <option value="SC">Santa Catarina (SC)</option>
-              <option value="SP">São Paulo (SP)</option>
-              <option value="SE">Sergipe (SE)</option>
-              <option value="TO">Tocantins (TO)</option>
-            </select>
-          </div>
-          <div class="form-group-venda">
-            <label for="pais"><i class="bi bi-globe"></i> País</label>
-            <input type="text" id="pais" placeholder="Nome do país">
-          </div>
-          <div class="form-group-venda">
-            <label for="cep"><i class="bi bi-mailbox"></i> CEP</label>
-            <input type="text" id="cep" required placeholder="00000-000">
+    </aside>
+
+    <div class="app-workspace">
+      <header class="app-topbar">
+        <div class="topbar-left">
+          <button type="button" class="mobile-menu-button" id="mobileMenuButton" aria-label="Abrir navegação" aria-expanded="false" aria-controls="appSidebar">
+            <i class="bi bi-list"></i>
+          </button>
+          <div class="breadcrumb">
+            <span>Central comercial</span>
+            <i class="bi bi-chevron-right"></i>
+            <strong id="breadcrumbAtual">Visão geral</strong>
           </div>
         </div>
-      </div>
-      
-      <div class="form-actions">
-        <button type="button" class="btn-cancelar" onclick="fecharFormVenda()">
-          <i class="bi bi-x-circle"></i> Cancelar
+        <div class="topbar-right">
+          <div class="topbar-date">
+            <i class="bi bi-calendar3"></i>
+            <span id="dataAtual"></span>
+          </div>
+          <span class="topbar-divider"></span>
+          <span class="topbar-avatar" aria-label="Painel administrativo">
+            <i class="bi bi-person-fill"></i>
+          </span>
+        </div>
+      </header>
+
+      <main class="app-main" id="visao-geral">
+        <section class="page-intro">
+          <div class="intro-content">
+            <div class="eyebrow">
+              <span class="eyebrow-line"></span>
+              PAINEL DE INTELIGÊNCIA COMERCIAL
+            </div>
+            <h1>Visão geral <span>das vendas.</span></h1>
+            <p>Acompanhe seus resultados, explore tendências e gerencie seus registros em um só lugar.</p>
+          </div>
+          <div class="intro-actions">
+            <button type="button" class="button button-outline selected" id="abrirFiltros" aria-expanded="true" aria-controls="painelFiltros">
+              <i class="bi bi-eye-slash"></i>
+              <span id="textoBotaoFiltros">Esconder filtros</span>
+            </button>
+          </div>
+        </section>
+
+        <div id="mensagens" class="mensagens" role="status" aria-live="polite"></div>
+
+        <div class="dashboard-layout" id="dashboardLayout">
+          <aside class="sidebar-filtros" id="painelFiltros">
+            <div class="sidebar-header">
+              <div class="filter-title">
+                <span class="filter-title-icon">
+                  <i class="bi bi-sliders2"></i>
+                </span>
+                <div>
+                  <h3>Refinar análise</h3>
+                  <p>Personalize os resultados</p>
+                </div>
+              </div>
+              <i id="botao" class="bi bi-chevron-down"></i>
+            </div>
+
+            <div class="sidebar-content">
+              <div class="filter-section-label">PERÍODO</div>
+
+              <div class="filtro-group">
+                <label for="periodoRapido">Intervalo rápido</label>
+                <select id="periodoRapido">
+                  <option value="todos">Todo o histórico</option>
+                  <option value="7">Últimos 7 dias</option>
+                  <option value="30">Últimos 30 dias</option>
+                  <option value="90">Últimos 90 dias</option>
+                  <option value="ano-atual">Este ano</option>
+                  <option value="ano-anterior">Ano anterior</option>
+                  <option value="personalizado">Personalizado</option>
+                </select>
+              </div>
+
+              <div class="filtro-group">
+                <label for="data-inicial">Data inicial</label>
+                <input type="date" id="data-inicial">
+              </div>
+              <div class="filtro-group">
+                <label for="data-final">Data final</label>
+                <input type="date" id="data-final">
+              </div>
+
+              <div class="filter-separator"></div>
+              <div class="filter-section-label">SEGMENTAÇÃO</div>
+
+              <div class="filtro-group">
+                <label for="categoria">Categoria</label>
+                <select id="categoria">
+                  <option value="">Todas as categorias</option>
+                </select>
+              </div>
+
+              <div class="filter-separator"></div>
+              <div class="filter-section-label">LOCALIZAÇÃO</div>
+
+              <div class="filtro-group">
+                <label for="filtro-pais">País</label>
+                <select id="filtro-pais">
+                  <option value="">Todos os países</option>
+                </select>
+              </div>
+              <div class="filtro-group">
+                <label for="filtro-estado">Estado</label>
+                <select id="filtro-estado">
+                  <option value="">Todos os estados</option>
+                </select>
+              </div>
+              <div class="filtro-group">
+                <label for="filtro-cidade">Cidade</label>
+                <select id="filtro-cidade">
+                  <option value="">Todas as cidades</option>
+                </select>
+              </div>
+              <div class="filtro-group series" style="display:none">
+                <label>Filtrar séries</label>
+                <div class="checkbox-container" id="checkbox-categorias"></div>
+              </div>
+
+              <div class="botoes-filtro">
+                <button type="button" class="btn-filtro" onclick="aplicarTodosFiltros()">
+                  <i class="bi bi-check2"></i>
+                  Aplicar filtros
+                </button>
+                <button type="button" class="btn-filtro btn-secundario" onclick="limparTodosFiltros()">
+                  <i class="bi bi-arrow-counterclockwise"></i>
+                  Limpar filtros
+                </button>
+              </div>
+            </div>
+          </aside>
+
+          <div class="conteudo-dashboard">
+            <section class="metrics-section" aria-labelledby="tituloIndicadores">
+              <div class="section-heading metrics-heading">
+                <div>
+                  <span class="section-kicker">DESEMPENHO</span>
+                  <h2 id="tituloIndicadores">Indicadores principais</h2>
+                </div>
+                <span class="section-meta">
+                  <i class="bi bi-activity"></i>
+                  Dados do período selecionado
+                </span>
+              </div>
+
+              <div class="active-filters" id="filtrosAtivosContainer" hidden>
+                <div class="active-filters-heading">
+                  <i class="bi bi-funnel"></i>
+                  <span>Filtros ativos</span>
+                </div>
+                <div class="active-filters-list" id="filtrosAtivos"></div>
+                <button type="button" class="clear-active-filters" id="limparFiltrosAtivos">
+                  Limpar todos
+                </button>
+              </div>
+
+              <section class="cards" id="cards-metricas" aria-label="Indicadores de vendas">
+                <div class="card card-loading">
+                  <div class="card-icon">
+                    <i class="bi bi-currency-dollar"></i>
+                  </div>
+                  <div class="card-info">
+                    <h3>Faturamento total</h3>
+                    <p>—</p>
+                  </div>
+                </div>
+                <div class="card card-loading">
+                  <div class="card-icon">
+                    <i class="bi bi-bag-check"></i>
+                  </div>
+                  <div class="card-info">
+                    <h3>Produtos vendidos</h3>
+                    <p>—</p>
+                  </div>
+                </div>
+                <div class="card card-loading">
+                  <div class="card-icon">
+                    <i class="bi bi-receipt"></i>
+                  </div>
+                  <div class="card-info">
+                    <h3>Ticket médio</h3>
+                    <p>—</p>
+                  </div>
+                </div>
+                <div class="card card-loading">
+                  <div class="card-icon">
+                    <i class="bi bi-trophy"></i>
+                  </div>
+                  <div class="card-info">
+                    <h3>Categoria mais vendida</h3>
+                    <p>—</p>
+                  </div>
+                </div>
+              </section>
+
+              <div class="metrics-summary" id="resumoIndicadores" aria-live="polite">
+                <div class="summary-item">
+                  <span class="summary-item-icon">
+                    <i class="bi bi-receipt-cutoff"></i>
+                  </span>
+                  <div>
+                    <span class="summary-item-label">Transações registradas</span>
+                    <strong id="resumoTransacoes">—</strong>
+                  </div>
+                </div>
+                <div class="summary-divider"></div>
+                <div class="summary-item">
+                  <span class="summary-item-icon">
+                    <i class="bi bi-box-seam"></i>
+                  </span>
+                  <div>
+                    <span class="summary-item-label">Produtos diferentes</span>
+                    <strong id="resumoProdutos">—</strong>
+                  </div>
+                </div>
+                <div class="summary-divider"></div>
+                <div class="summary-item">
+                  <span class="summary-item-icon">
+                    <i class="bi bi-calendar-range"></i>
+                  </span>
+                  <div>
+                    <span class="summary-item-label">Período analisado</span>
+                    <strong id="resumoPeriodo">Todos os períodos</strong>
+                  </div>
+                </div>
+              </div>
+
+              <div class="performance-comparison">
+                <article class="comparison-card" id="cardCrescimentoAnual">
+                  <div class="comparison-card-header">
+                    <span class="comparison-card-icon">
+                      <i class="bi bi-graph-up-arrow"></i>
+                    </span>
+                    <span class="comparison-card-label">CRESCIMENTO ANUAL</span>
+                  </div>
+                  <div class="comparison-card-value">
+                    <strong id="crescimentoAnualPercentual">—</strong>
+                    <span id="crescimentoAnualTendencia">
+                      <i class="bi bi-dash"></i>
+                    </span>
+                  </div>
+                  <p id="crescimentoAnualDescricao">Comparação do faturamento entre anos</p>
+                  <div class="comparison-card-years">
+                    <div>
+                      <span id="crescimentoAnoAnteriorLabel">Ano anterior</span>
+                      <strong id="crescimentoAnoAnteriorValor">—</strong>
+                    </div>
+                    <div>
+                      <span id="crescimentoAnoAtualLabel">Ano atual</span>
+                      <strong id="crescimentoAnoAtualValor">—</strong>
+                    </div>
+                  </div>
+                </article>
+
+                <article class="comparison-card" id="cardVariacaoPeriodo">
+                  <div class="comparison-card-header">
+                    <span class="comparison-card-icon">
+                      <i class="bi bi-arrow-left-right"></i>
+                    </span>
+                    <span class="comparison-card-label">VARIAÇÃO DO PERÍODO</span>
+                  </div>
+                  <div class="comparison-card-value">
+                    <strong id="variacaoPeriodoPercentual">—</strong>
+                    <span id="variacaoPeriodoTendencia">
+                      <i class="bi bi-dash"></i>
+                    </span>
+                  </div>
+                  <p id="variacaoPeriodoDescricao">Em relação ao período anterior equivalente</p>
+                  <div class="comparison-card-years">
+                    <div>
+<span id="periodoAnteriorLabel">Período anterior</span>
+<strong id="faturamentoPeriodoAnterior">—</strong>
+                    </div>
+                    <div>
+<span id="periodoAtualLabel">Período selecionado</span>
+<strong id="faturamentoPeriodoAtual">—</strong>
+                    </div>
+                  </div>
+                </article>
+              </div>
+            </section>
+
+            <section id="analises" class="dashboard-section">
+              <div class="section-heading">
+                <div>
+                  <span class="section-kicker">ANÁLISE DE RESULTADOS</span>
+                  <h2>Desempenho comercial</h2>
+                </div>
+                <span class="section-meta">Visualização detalhada</span>
+              </div>
+
+              <div class="graficos">
+                <article class="grafico-card grafico-evolucao">
+                  <div class="grafico-card-header">
+                    <div>
+                      <span class="chart-overline">EVOLUÇÃO</span>
+                      <h2>Evolução de vendas</h2>
+                      <p>Comportamento do faturamento ao longo do tempo</p>
+                    </div>
+                    <div class="chart-header-actions">
+                      <div class="chart-segmented-control" id="controleAgrupamento" role="group" aria-label="Agrupar evolução de vendas">
+                        <button type="button" class="chart-segment active" data-periodo="dia" aria-pressed="true">Dia</button>
+                        <button type="button" class="chart-segment" data-periodo="semana" aria-pressed="false">Semana</button>
+                        <button type="button" class="chart-segment" data-periodo="mes" aria-pressed="false">Mês</button>
+                        <button type="button" class="chart-segment" data-periodo="ano" aria-pressed="false">Ano</button>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="evolucao-options">
+                    <div class="evolucao-range">
+                      <label for="intervaloGrafico">Visualizar</label>
+                      <select id="intervaloGrafico">
+                        <option value="todos">Todo o histórico</option>
+                        <option value="12">Últimos 12 meses</option>
+                        <option value="24">Últimos 24 meses</option>
+                        <option value="36">Últimos 36 meses</option>
+                        <option value="60">Últimos 5 anos</option>
+                      </select>
+                    </div>
+                    <label class="chart-checkbox">
+                      <input type="checkbox" id="compararAnosGrafico">
+                      <span>Comparar anos</span>
+                    </label>
+                  </div>
+                  <div class="evolucao-scroll" id="evolucaoScroll">
+                    <div class="evolucao-chart" id="evolucaoChart">
+                      <canvas id="mapaCalor" role="img" aria-label="Evolução do faturamento por período"></canvas>
+                    </div>
+                  </div>
+                  <div class="chart-footer">
+                    <span>
+                      <i class="bi bi-info-circle"></i>
+                      Valores agrupados por período
+                    </span>
+                    <strong id="totalEvolucao">—</strong>
+                  </div>
+                </article>
+
+                <article class="grafico-card grafico-categoria">
+                  <div class="grafico-card-header">
+                    <div>
+                      <span class="chart-overline">PARTICIPAÇÃO</span>
+                      <h2>Vendas por categoria</h2>
+                      <p>Distribuição do faturamento</p>
+                    </div>
+                    <span class="chart-icon">
+                      <i class="bi bi-pie-chart"></i>
+                    </span>
+                  </div>
+                  <div class="chart-body chart-body-donut">
+                    <canvas id="graficoPizza" role="img" aria-label="Distribuição de vendas por categoria"></canvas>
+                  </div>
+                  <div class="chart-footer">
+                    <span>
+                      <i class="bi bi-tags"></i>
+                      Categorias identificadas
+                    </span>
+                    <strong id="totalCategorias">—</strong>
+                  </div>
+                </article>
+
+                <article class="grafico-card grafico-produtos">
+                  <div class="grafico-card-header">
+                    <div>
+                      <span class="chart-overline">COMPARATIVO</span>
+                      <h2>Vendas por produto</h2>
+                      <p>Produtos com maior faturamento</p>
+                    </div>
+                    <span class="chart-icon">
+                      <i class="bi bi-bar-chart"></i>
+                    </span>
+                  </div>
+                  <div class="chart-body">
+                    <canvas id="graficoBarras" role="img" aria-label="Comparação de vendas por produto"></canvas>
+                  </div>
+                  <div class="chart-footer">
+                    <span>
+                      <i class="bi bi-sort-down"></i>
+                      Ordenado por faturamento
+                    </span>
+                    <strong>R$</strong>
+                  </div>
+                </article>
+              </div>
+            </section>
+
+            <section id="comparativos" class="dashboard-section">
+              <div class="section-heading">
+                <div>
+                  <span class="section-kicker">ANÁLISE TEMPORAL</span>
+                  <h2>Comparação de desempenho</h2>
+                </div>
+                <span class="section-meta">Evolução entre períodos</span>
+              </div>
+
+              <article class="grafico-card grafico-comparativo">
+                <div class="grafico-card-header">
+                  <div>
+                    <span class="chart-overline">COMPARAÇÃO ANUAL</span>
+                    <h3>Faturamento entre anos</h3>
+                    <p>Compare o desempenho comercial de diferentes exercícios</p>
+                  </div>
+                  <div class="chart-header-actions">
+                    <div class="comparison-select">
+                      <label for="anoComparacaoA">Ano base</label>
+                      <select id="anoComparacaoA">
+                        <option value="">Selecionar ano</option>
+                      </select>
+                    </div>
+                    <div class="comparison-select">
+                      <label for="anoComparacaoB">Comparar com</label>
+                      <select id="anoComparacaoB">
+                        <option value="">Selecionar ano</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+                <div class="chart-body">
+                  <canvas id="graficoComparacaoAnual" role="img" aria-label="Comparação de faturamento entre anos"></canvas>
+                </div>
+                <div class="chart-footer">
+                  <span>
+                    <i class="bi bi-calendar-range"></i>
+                    Comparação de períodos equivalentes
+                  </span>
+                  <strong id="resultadoComparacaoAnual">—</strong>
+                </div>
+              </article>
+            </section>
+
+            <section id="distribuicao" class="dashboard-section">
+              <div class="section-heading">
+                <div>
+                  <span class="section-kicker">INTELIGÊNCIA GEOGRÁFICA</span>
+                  <h2>Distribuição e alcance</h2>
+                </div>
+                <span class="section-meta">Análise por localização</span>
+              </div>
+
+              <div class="regional-summary">
+                <div class="regional-summary-item">
+                  <span>Estado selecionado</span>
+                  <strong id="estadoMapaSelecionado">Todos os estados</strong>
+                </div>
+                <div class="regional-summary-item">
+                  <span>Faturamento regional</span>
+                  <strong id="faturamentoEstadoSelecionado">—</strong>
+                </div>
+                <div class="regional-summary-item">
+                  <span>Participação no faturamento</span>
+                  <strong id="participacaoEstadoSelecionado">—</strong>
+                </div>
+                <button type="button" class="button button-outline" id="limparSelecaoMapa" hidden>
+                  <i class="bi bi-x-circle"></i>
+                  Limpar seleção
+                </button>
+              </div>
+
+              <div class="graficos graficos-geograficos">
+                <article class="grafico-card grafico-mapa">
+                  <div class="grafico-card-header">
+                    <div>
+                      <span class="chart-overline">MAPEAMENTO</span>
+                      <h2>Mapa de vendas</h2>
+                      <p>Selecione uma região para explorar os resultados</p>
+                    </div>
+                    <span class="chart-icon">
+                      <i class="bi bi-geo-alt"></i>
+                    </span>
+                  </div>
+                  <div class="chart-body">
+                    <div id="mapaVendas" aria-label="Mapa interativo de vendas"></div>
+                  </div>
+                  <div class="chart-footer">
+                    <span>
+                      <i class="bi bi-geo"></i>
+                      Distribuição geográfica
+                    </span>
+                    <strong id="totalLocalidades">—</strong>
+                  </div>
+                </article>
+
+                <article class="grafico-card grafico-estados">
+                  <div class="grafico-card-header">
+                    <div>
+                      <span class="chart-overline">DISTRIBUIÇÃO REGIONAL</span>
+                      <h2>Vendas por estado</h2>
+                      <p>Faturamento por unidade federativa</p>
+                    </div>
+                    <span class="chart-icon">
+                      <i class="bi bi-map"></i>
+                    </span>
+                  </div>
+                  <div class="chart-body">
+                    <canvas id="graficoVendasEstado" role="img" aria-label="Gráfico de faturamento por estado"></canvas>
+                  </div>
+                  <div class="chart-footer">
+                    <span>
+                      <i class="bi bi-globe-americas"></i>
+                      Estados com vendas
+                    </span>
+                    <strong id="totalEstados">—</strong>
+                  </div>
+                </article>
+              </div>
+            </section>
+
+            <section id="produtos" class="graficos-container dashboard-section">
+              <div class="section-heading">
+                <div>
+                  <span class="section-kicker">DESTAQUES</span>
+                  <h2>Produtos em evidência</h2>
+                </div>
+                <span class="section-meta">Análise de produtos</span>
+              </div>
+
+              <div class="product-insights">
+                <article class="product-insight-card">
+                  <span class="product-insight-icon">
+                    <i class="bi bi-currency-dollar"></i>
+                  </span>
+                  <div>
+                    <span>Maior faturamento</span>
+                    <strong id="produtoMaiorFaturamento">—</strong>
+                    <small id="produtoMaiorFaturamentoValor">—</small>
+                  </div>
+                </article>
+                <article class="product-insight-card">
+                  <span class="product-insight-icon">
+                    <i class="bi bi-box-seam"></i>
+                  </span>
+                  <div>
+                    <span>Mais unidades vendidas</span>
+                    <strong id="produtoMaisVendido">—</strong>
+                    <small id="produtoMaisVendidoQuantidade">—</small>
+                  </div>
+                </article>
+                <article class="product-insight-card">
+                  <span class="product-insight-icon">
+                    <i class="bi bi-percent"></i>
+                  </span>
+                  <div>
+                    <span>Maior participação</span>
+                    <strong id="produtoMaiorParticipacao">—</strong>
+                    <small id="produtoMaiorParticipacaoValor">—</small>
+                  </div>
+                </article>
+                <article class="product-insight-card">
+                  <span class="product-insight-icon">
+                    <i class="bi bi-graph-down-arrow"></i>
+                  </span>
+                  <div>
+                    <span>Maior queda de desempenho</span>
+                    <strong id="produtoMaiorQueda">—</strong>
+                    <small id="produtoMaiorQuedaValor">—</small>
+                  </div>
+                </article>
+              </div>
+
+              <div class="grafico-linha-dupla">
+                <article class="grafico-card ranking-card">
+                  <div class="grafico-card-header">
+                    <div>
+                      <span class="chart-overline">CLASSIFICAÇÃO</span>
+                      <h3>Ranking de produtos</h3>
+                      <p>Produtos com maior faturamento</p>
+                    </div>
+                    <span class="chart-icon">
+                      <i class="bi bi-trophy"></i>
+                    </span>
+                  </div>
+                  <ol id="ranking-produtos" aria-label="Ranking de produtos"></ol>
+                  <div class="chart-footer">
+                    <span>
+                      <i class="bi bi-award"></i>
+                      Destaques do período
+                    </span>
+                  </div>
+                </article>
+
+                <article class="grafico-card grafico-regional">
+                  <div class="grafico-card-header">
+                    <div>
+                      <span class="chart-overline">COMPARAÇÃO REGIONAL</span>
+                      <h2>Produtos por região</h2>
+                      <p>Desempenho dos produtos por estado</p>
+                    </div>
+                    <span class="chart-icon">
+                      <i class="bi bi-diagram-3"></i>
+                    </span>
+                  </div>
+                  <div class="chart-body">
+                    <canvas id="graficoProdutosRegiao" role="img" aria-label="Comparação de produtos por região"></canvas>
+                  </div>
+                  <div class="chart-footer">
+                    <span>
+                      <i class="bi bi-bar-chart-steps"></i>
+                      Comparativo regional
+                    </span>
+                  </div>
+                </article>
+              </div>
+            </section>
+          </div>
+        </div>
+
+        <section id="registros" class="dashboard-section records-section">
+          <div class="section-heading">
+            <div>
+              <span class="section-kicker">GESTÃO COMERCIAL</span>
+              <h2>Registros de vendas</h2>
+            </div>
+            <button type="button" class="button button-primary" onclick="abrirFormVenda()">
+              <i class="bi bi-plus-lg"></i>
+              Nova venda
+            </button>
+          </div>
+
+          <div class="tabela">
+            <div class="tabela-header">
+              <div>
+                <h2>Histórico de transações</h2>
+                <p>Consulte, pesquise e gerencie as vendas cadastradas</p>
+              </div>
+              <div class="table-header-right">
+                <span class="table-count" id="contadorRegistros">0 registros</span>
+                <span class="table-label">
+                  <i class="bi bi-table"></i>
+                  REGISTROS
+                </span>
+              </div>
+            </div>
+
+            <div class="table-toolbar">
+              <div class="table-search">
+                <i class="bi bi-search"></i>
+                <input type="search" id="buscaVendas" placeholder="Buscar por produto, categoria, cidade..." aria-label="Buscar registros de vendas" autocomplete="off">
+                <button type="button" id="limparBuscaVendas" class="table-search-clear" aria-label="Limpar busca" hidden>
+                  <i class="bi bi-x-lg"></i>
+                </button>
+              </div>
+              <div class="table-toolbar-actions">
+                <div class="table-select-wrapper">
+                  <i class="bi bi-funnel"></i>
+                  <select id="filtroCategoriaTabela" aria-label="Filtrar categoria da tabela">
+                    <option value="">Todas as categorias</option>
+                  </select>
+                </div>
+                <div class="table-select-wrapper">
+                  <i class="bi bi-sort-down"></i>
+                  <select id="ordenacaoVendas" aria-label="Ordenar vendas">
+                    <option value="data-desc">Mais recentes</option>
+                    <option value="data-asc">Mais antigas</option>
+                    <option value="valor-desc">Maior valor</option>
+                    <option value="valor-asc">Menor valor</option>
+                    <option value="quantidade-desc">Maior quantidade</option>
+                    <option value="quantidade-asc">Menor quantidade</option>
+                    <option value="produto-asc">Produto: A–Z</option>
+                    <option value="produto-desc">Produto: Z–A</option>
+                  </select>
+                </div>
+                <div class="table-select-wrapper">
+                  <i class="bi bi-list-ol"></i>
+                  <select id="itensPorPagina" aria-label="Registros por página">
+                    <option value="10">10 por página</option>
+                    <option value="20">20 por página</option>
+                    <option value="50">50 por página</option>
+                    <option value="100">100 por página</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <div class="table-scroll">
+              <table id="tabelaRegistros">
+                <thead>
+                  <tr>
+                    <th scope="col">ID</th>
+                    <th scope="col">Produto</th>
+                    <th scope="col">Categoria</th>
+                    <th scope="col">Quantidade</th>
+                    <th scope="col">Valor</th>
+                    <th scope="col">Cidade</th>
+                    <th scope="col">Estado</th>
+                    <th scope="col">CEP</th>
+                    <th scope="col">Data</th>
+                    <th scope="col">Ações</th>
+                  </tr>
+                </thead>
+                <tbody id="tabela-vendas"></tbody>
+              </table>
+            </div>
+
+            <div class="table-empty-state" id="tabelaSemResultados" hidden>
+              <span class="empty-state-icon">
+                <i class="bi bi-search"></i>
+              </span>
+              <h3>Nenhum registro encontrado</h3>
+              <p>Tente ajustar a busca ou os filtros selecionados.</p>
+              <button type="button" class="button button-outline" id="limparBuscaSemResultados">
+                Limpar busca
+              </button>
+            </div>
+
+            <div class="table-pagination" id="paginacaoVendas">
+              <div class="pagination-info" id="informacoesPaginacao">
+                Exibindo 0 de 0 registros
+              </div>
+              <div class="pagination-controls">
+                <button type="button" class="pagination-button" id="paginaAnterior" aria-label="Página anterior" disabled>
+                  <i class="bi bi-chevron-left"></i>
+                </button>
+                <div class="pagination-pages" id="numerosPaginas"></div>
+                <button type="button" class="pagination-button" id="proximaPagina" aria-label="Próxima página" disabled>
+                  <i class="bi bi-chevron-right"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <footer class="app-footer">
+          <span>
+            Dashboard de Vendas
+            <span class="footer-dot"></span>
+            Central Comercial
+          </span>
+          <span>Gestão e inteligência de dados</span>
+        </footer>
+      </main>
+    </div>
+  </div>
+
+  <div id="mobileSidebarOverlay" class="mobile-sidebar-overlay"></div>
+
+  <div id="formVendaModal" class="modal" style="display:none" role="dialog" aria-modal="true" aria-labelledby="formTitulo">
+    <div class="modal-content-venda">
+      <div class="modal-header-venda">
+        <div>
+          <span class="modal-eyebrow">GESTÃO DE REGISTROS</span>
+          <h2>
+            <i class="bi bi-cart-plus"></i>
+            <span id="formTitulo">Cadastrar Venda</span>
+          </h2>
+        </div>
+        <button type="button" class="close-venda" onclick="fecharFormVenda()" aria-label="Fechar formulário">
+          <i class="bi bi-x-lg"></i>
         </button>
-        <button type="submit" class="btn-salvar">
-          <i class="bi bi-check-circle"></i> Salvar Venda
+      </div>
+
+      <form id="formVenda">
+        <input type="hidden" id="venda-id">
+
+        <div class="form-section">
+          <h3 class="section-title">
+            <i class="bi bi-box-seam"></i>
+            Informações do produto
+          </h3>
+          <div class="form-grid">
+            <div class="form-group-venda">
+              <label for="produto">Produto</label>
+              <input type="text" id="produto" required placeholder="Nome do produto" maxlength="150" list="sugestoesProdutos" autocomplete="off">
+              <datalist id="sugestoesProdutos"></datalist>
+            </div>
+            <div class="form-group-venda">
+              <label for="categoriaForm">Categoria</label>
+              <input type="text" id="categoriaForm" required placeholder="Categoria do produto" maxlength="100" list="sugestoesCategorias" autocomplete="off">
+              <datalist id="sugestoesCategorias"></datalist>
+            </div>
+            <div class="form-group-venda">
+              <label for="quantidade">Quantidade</label>
+              <input type="number" id="quantidade" required placeholder="0" min="1" step="1">
+            </div>
+            <div class="form-group-venda">
+              <label for="valor">Valor (R$)</label>
+              <input type="number" id="valor" required placeholder="0,00" min="0.01" step="0.01">
+            </div>
+            <div class="form-group-venda">
+              <label for="dataVendaForm">Data da venda</label>
+              <input type="date" id="dataVendaForm" required>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <h3 class="section-title">
+            <i class="bi bi-geo-alt"></i>
+            Localização
+          </h3>
+          <div class="form-grid">
+            <div class="form-group-venda">
+              <label for="cidade">Cidade</label>
+              <input type="text" id="cidade" placeholder="Nome da cidade" maxlength="120">
+            </div>
+            <div class="form-group-venda">
+              <label for="estado">Estado</label>
+              <select id="estado" class="select-estado">
+                <option value="">Selecione um estado</option>
+                <option value="AC">Acre (AC)</option>
+                <option value="AL">Alagoas (AL)</option>
+                <option value="AP">Amapá (AP)</option>
+                <option value="AM">Amazonas (AM)</option>
+                <option value="BA">Bahia (BA)</option>
+                <option value="CE">Ceará (CE)</option>
+                <option value="DF">Distrito Federal (DF)</option>
+                <option value="ES">Espírito Santo (ES)</option>
+                <option value="GO">Goiás (GO)</option>
+                <option value="MA">Maranhão (MA)</option>
+                <option value="MT">Mato Grosso (MT)</option>
+                <option value="MS">Mato Grosso do Sul (MS)</option>
+                <option value="MG">Minas Gerais (MG)</option>
+                <option value="PA">Pará (PA)</option>
+                <option value="PB">Paraíba (PB)</option>
+                <option value="PR">Paraná (PR)</option>
+                <option value="PE">Pernambuco (PE)</option>
+                <option value="PI">Piauí (PI)</option>
+                <option value="RJ">Rio de Janeiro (RJ)</option>
+                <option value="RN">Rio Grande do Norte (RN)</option>
+                <option value="RS">Rio Grande do Sul (RS)</option>
+                <option value="RO">Rondônia (RO)</option>
+                <option value="RR">Roraima (RR)</option>
+                <option value="SC">Santa Catarina (SC)</option>
+                <option value="SP">São Paulo (SP)</option>
+                <option value="SE">Sergipe (SE)</option>
+                <option value="TO">Tocantins (TO)</option>
+              </select>
+            </div>
+            <div class="form-group-venda">
+              <label for="pais">País</label>
+              <input type="text" id="pais" placeholder="Nome do país" maxlength="100">
+            </div>
+            <div class="form-group-venda">
+              <label for="cep">CEP</label>
+              <input type="text" id="cep" required placeholder="00000-000" inputmode="numeric" maxlength="9">
+            </div>
+          </div>
+        </div>
+
+        <div class="form-validation-message" id="mensagemValidacaoVenda" role="alert" hidden></div>
+
+        <div class="form-actions">
+          <button type="button" class="btn-cancelar" onclick="fecharFormVenda()">
+            <i class="bi bi-x-lg"></i>
+            Cancelar
+          </button>
+          <button type="submit" class="btn-salvar" id="salvarVenda">
+            <i class="bi bi-check-lg"></i>
+            Salvar venda
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="relatoriosModal" class="modal" style="display:none" role="dialog" aria-modal="true" aria-labelledby="relatoriosTitulo">
+    <div class="modal-content-venda relatorios-modal-content">
+      <div class="modal-header-venda">
+        <div>
+          <span class="modal-eyebrow">ANÁLISE E EXPORTAÇÃO</span>
+          <h2 id="relatoriosTitulo">
+            <i class="bi bi-file-earmark-bar-graph"></i>
+            Relatórios personalizados
+          </h2>
+        </div>
+        <button type="button" class="close-venda" id="fecharRelatorios" aria-label="Fechar relatórios">
+          <i class="bi bi-x-lg"></i>
         </button>
       </div>
-    </form>
-  </div>
-</div>
 
-<div id="confirmarExclusaoModal" class="modal" style="display:none;">
-  <div class="modal-content" style="max-width: 400px; text-align: center;">
-    <div class="modal-icon">
-      <i class="bi bi-exclamation-triangle" style="font-size: 48px; color: #f44336;"></i>
+      <form id="formRelatorios">
+        <div class="form-section">
+          <h3 class="section-title">
+            <i class="bi bi-sliders"></i>
+            Configuração do relatório
+          </h3>
+          <div class="form-grid">
+            <div class="form-group-venda">
+              <label for="relatorioTipo">Tipo de análise</label>
+              <select id="relatorioTipo">
+                <option value="geral">Visão geral de vendas</option>
+                <option value="produtos">Desempenho por produto</option>
+                <option value="categorias">Vendas por categoria</option>
+                <option value="regioes">Desempenho por região</option>
+                <option value="anual">Comparação anual</option>
+              </select>
+            </div>
+            <div class="form-group-venda">
+              <label for="relatorioPeriodo">Período</label>
+              <select id="relatorioPeriodo">
+                <option value="filtros">Usar filtros atuais</option>
+                <option value="todos">Todo o histórico</option>
+                <option value="30">Últimos 30 dias</option>
+                <option value="90">Últimos 90 dias</option>
+                <option value="ano-atual">Este ano</option>
+                <option value="personalizado">Personalizado</option>
+              </select>
+            </div>
+            <div class="form-group-venda">
+              <label for="relatorioDataInicial">Data inicial</label>
+              <input type="date" id="relatorioDataInicial">
+            </div>
+            <div class="form-group-venda">
+              <label for="relatorioDataFinal">Data final</label>
+              <input type="date" id="relatorioDataFinal">
+            </div>
+            <div class="form-group-venda">
+              <label for="relatorioFormato">Formato</label>
+              <select id="relatorioFormato">
+                <option value="pdf">PDF</option>
+                <option value="excel">Excel</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="btn-cancelar" id="cancelarRelatorios">
+            <i class="bi bi-x-lg"></i>
+            Cancelar
+          </button>
+          <button type="submit" class="btn-salvar" id="gerarRelatorio">
+            <i class="bi bi-download"></i>
+            Gerar relatório
+          </button>
+        </div>
+      </form>
     </div>
-    <h2 style="margin: 10px 0 10px;">Confirmar Exclusão</h2>
-    <p id="confirmarExclusaoTexto" style="margin-bottom: 25px; color: var(--text-secondary);"></p>
-    <div style="display: flex; gap: 15px;">
-      <button id="btnCancelarExclusao" style="flex: 1; padding: 12px; background: #6c757d; border: none; border-radius: 8px; color: white; font-weight: 600; cursor: pointer;">
-        <i class="bi bi-x-circle" style="margin-right: 5px;"></i> Cancelar
-      </button>
-      <button id="btnConfirmarExclusao" style="flex: 1; padding: 12px; background: #f44336; border: none; border-radius: 8px; color: white; font-weight: 600; cursor: pointer;">
-        Excluir
-      </button>
+  </div>
+
+  <div id="confirmarExclusaoModal" class="modal" style="display:none" role="dialog" aria-modal="true" aria-labelledby="tituloConfirmarExclusao">
+    <div class="modal-content">
+      <div class="modal-icon">
+        <i class="bi bi-exclamation-triangle"></i>
+      </div>
+      <h2 id="tituloConfirmarExclusao">Confirmar exclusão</h2>
+      <p id="confirmarExclusaoTexto"></p>
+      <div class="confirmation-actions">
+        <button type="button" id="btnCancelarExclusao">
+          <i class="bi bi-x-lg"></i>
+          Cancelar
+        </button>
+        <button type="button" id="btnConfirmarExclusao">
+          <i class="bi bi-trash3"></i>
+          Excluir
+        </button>
+      </div>
     </div>
   </div>
-</div>
 
-<div id="loaderOverlay" class="loader-overlay" style="display: none;">
-  <div class="loader-container">
-    <div class="loader-spinner"></div>
-    <div class="loader-text" id="loaderText"></div>
-    <div class="loader-progress">
-      <div class="loader-progress-bar"></div>
+  <div id="confirmarVendaDuplicadaModal" class="modal" style="display:none" role="dialog" aria-modal="true" aria-labelledby="tituloVendaDuplicada">
+    <div class="modal-content">
+      <div class="modal-icon">
+        <i class="bi bi-exclamation-circle"></i>
+      </div>
+      <h2 id="tituloVendaDuplicada">Possível venda duplicada</h2>
+      <p id="textoVendaDuplicada">Já existe uma venda com informações semelhantes. Deseja continuar com o cadastro?</p>
+      <div class="confirmation-actions">
+        <button type="button" id="cancelarVendaDuplicada">
+          <i class="bi bi-x-lg"></i>
+          Revisar dados
+        </button>
+        <button type="button" id="confirmarVendaDuplicada">
+          <i class="bi bi-check-lg"></i>
+          Salvar mesmo assim
+        </button>
+      </div>
     </div>
   </div>
-</div>
 
-<div id="notificacoesContainer" class="notificacoes-container"></div>
+  <div id="loaderOverlay" class="loader-overlay" style="display:none" role="status" aria-live="polite">
+    <div class="loader-container">
+      <div class="loader-spinner"></div>
+      <div class="loader-text" id="loaderText">Carregando...</div>
+      <div class="loader-progress">
+        <div class="loader-progress-bar"></div>
+      </div>
+    </div>
+  </div>
 
-<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
-<script src="js/script.js"></script>
+  <div id="notificacoesContainer" class="notificacoes-container" aria-live="polite"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="js/script.js"></script>
 </body>
 </html>

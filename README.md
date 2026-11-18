@@ -2,9 +2,11 @@
 
 ## 📋 Sobre o Projeto
 
-O **Dashboard de Vendas** é uma aplicação web completa para monitoramento e gestão de vendas. Com uma interface intuitiva e responsiva, permite visualizar métricas em tempo real, analisar gráficos interativos, gerenciar vendas e exportar relatórios.
+O **Dashboard de Vendas** é uma aplicação web para gerenciamento de vendas, monitoramento de indicadores financeiros e análise de desempenho comercial.
 
-> Acesse o projeto online: (https://dashboard-vendas-node.netlify.app)
+A plataforma reúne gráficos interativos, filtros avançados, análises temporais e geográficas, gerenciamento de registros e geração de relatórios personalizados em uma interface responsiva.
+
+> 🔗 **Acesse online:** (https://dashboard-vendas-node.netlify.app/)
 
 ---
 
@@ -12,67 +14,104 @@ O **Dashboard de Vendas** é uma aplicação web completa para monitoramento e g
 
 ### 📝 Gestão de Vendas
 - Cadastro, edição e exclusão de vendas
-- Formulário intuitivo com validação de dados
-- Feedback visual para todas as ações
+- Registro de produtos, categorias, quantidades, valores e localização
+- Validação dos dados informados
+- Confirmação antes da exclusão de registros
+- Atualização dos indicadores após alterações
 
-### 🔍 Filtros Inteligentes
-- Filtragem por período (data inicial/final)
+### 🔍 Filtros e Pesquisa
+- Filtragem por intervalo de datas
+- Filtros rápidos de período
 - Filtro por categoria de produto
-- Filtros geográficos (país, estado, cidade)
-- Filtro por séries (categorias selecionáveis)
+- Filtros geográficos por país, estado e cidade
+- Combinação de diferentes filtros
+- Indicadores visuais dos filtros aplicados
+- Pesquisa dinâmica na tabela de vendas
+- Ordenação e paginação dos registros
 
-### 📊 Visualização de Dados
-- **Cards de Métricas:** Total de vendas, total de produtos, ticket médio e categoria mais vendida
-- **Gráfico Radar:** Vendas por produto
-- **Gráfico de Pizza:** Distribuição de vendas por categoria
-- **Gráfico de Área:** Evolução de vendas por dia/hora
-- **Mapa Interativo:** Visualização geográfica das vendas com Leaflet
-- **Gráfico de Vendas por Estado:** Distribuição regional
-- **Ranking de Produtos:** Top 15 produtos mais vendidos
+### 📊 Indicadores Comerciais
+- Faturamento total
+- Quantidade de produtos vendidos
+- Ticket médio por transação
+- Categoria mais vendida
+- Quantidade de transações e produtos distintos
+- Comparação de faturamento entre períodos equivalentes
+- Crescimento anual com comparação entre anos
+- Identificação de novos faturamentos quando não existe base percentual de comparação
 
-### 📤 Exportação de Relatórios
-- **Excel:** Exporta métricas e tabela completa de vendas
-- **PDF:** Relatório completo com gráficos e tabela
+### 📈 Gráficos e Análises
+- **Evolução de Vendas:** acompanhamento do faturamento por dia, semana ou mês
+- **Distribuição por Categoria:** gráfico de rosca com participação das categorias
+- **Faturamento por Produto:** gráfico de barras comparativo
+- **Vendas por Estado:** análise do desempenho regional
+- **Produtos por Região:** comparação de produtos entre diferentes estados
+- **Ranking de Produtos:** classificação dos 10 produtos com maior faturamento
+- **Mapa Interativo:** visualização geográfica das vendas com Leaflet
+- **Análise Anual:** comparação de resultados e variações entre anos
 
-### 💬 Sistema de Feedback
-- Notificações em tempo real
-- Loader para operações assíncronas
-- Modais de confirmação para ações destrutivas
+### 📤 Relatórios Personalizados
+
+Exportação de relatórios em **PDF e Excel**, com diferentes modelos:
+
+- **Visão Geral:** resumo financeiro e registros de vendas
+- **Por Produto:** quantidade, transações, faturamento e participação
+- **Por Categoria:** desempenho comercial agrupado por categoria
+- **Por Região:** resultados por país, estado e cidade
+- **Por Ano:** faturamento anual e variação entre anos consecutivos
+
+Os relatórios consideram os filtros aplicados no dashboard.
+
+### 💬 Notificações e Interações
+- Notificações de sucesso, erro e aviso
+- Indicadores de carregamento para operações assíncronas
+- Modais para cadastro, edição e exclusão
+- Feedback visual durante as operações
+- Atualização dinâmica de tabelas, gráficos e indicadores
 
 ### 📱 Design Responsivo
-- Interface adaptada para todos os dispositivos
-- Sidebar de filtros recolhível no mobile
-- Gráficos com toggle para melhor visualização em telas pequenas
+- Interface adaptável para desktop, tablet e dispositivos móveis
+- Menu lateral responsivo
+- Organização dos indicadores em diferentes resoluções
+- Tabelas com navegação e paginação
+- Gráficos interativos adaptados ao espaço disponível
 
 ---
 
 ## 🛠️ Tecnologias Utilizadas
 
 ### Backend
+
 | Tecnologia | Descrição |
 |------------|-----------|
 | **Node.js** | Ambiente de execução JavaScript |
-| **Express** | Framework web para Node.js |
+| **Express** | Framework para construção da API REST |
 | **MySQL** | Banco de dados relacional |
-| **CORS** | Middleware para requisições cross-origin |
+| **CORS** | Gerenciamento de requisições entre origens |
 
 ### Frontend
+
 | Tecnologia | Descrição |
 |------------|-----------|
-| **HTML5 / CSS3** | Estrutura e estilização |
-| **JavaScript (ES6+)** | Lógica da aplicação |
-| **Chart.js** | Criação de gráficos interativos |
-| **Leaflet** | Mapas interativos |
-| **jsPDF** | Exportação de PDF |
-| **SheetJS (XLSX)** | Exportação de Excel |
-| **Bootstrap Icons** | Ícones vetoriais |
-| **Font Awesome** | Ícones adicionais |
+| **HTML5** | Estrutura da aplicação |
+| **CSS3** | Estilização e responsividade |
+| **JavaScript (ES6+)** | Lógica, interatividade e integração com a API |
+| **Chart.js** | Visualização de dados em gráficos |
+| **Leaflet** | Mapas geográficos interativos |
+| **jsPDF** | Geração de relatórios PDF |
+| **jsPDF AutoTable** | Construção de tabelas nos relatórios PDF |
+| **SheetJS (XLSX)** | Geração de planilhas Excel |
+| **Bootstrap Icons** | Ícones da interface |
 
 ### Infraestrutura
+
 | Tecnologia | Descrição |
 |------------|-----------|
 | **Netlify** | Hospedagem do frontend |
 | **DigitalOcean** | Hospedagem do backend |
-| **PM2** | Gerenciamento de processos Node.js |
+| **PM2** | Gerenciamento do processo Node.js |
 
 ---
+
+## 📌 Objetivo
+
+O projeto foi desenvolvido para reunir operações de gestão de vendas e recursos de análise comercial em uma única plataforma, permitindo acompanhar resultados, identificar tendências, comparar períodos e gerar relatórios para apoiar a tomada de decisões.

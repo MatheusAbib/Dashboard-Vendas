@@ -476,14 +476,31 @@ function rotuloPeriodo(chave, agrupamento) {
   return formatarData(chave);
 }
 
+
 function preencherGraficoArea(vendas) {
   const canvas = document.getElementById("mapaCalor");
 
   if (!canvas) return;
 
+  const anoAtual = new Date().getFullYear();
+
+const vendasAnoAtual = vendas.filter(venda => {
+  const data = obterDataVenda(venda);
+
+  return data && Number(data.slice(0, 4)) === anoAtual;
+});
+
+const vendasEvolucao =
+  filtrosAplicados.dataInicial || filtrosAplicados.dataFinal
+    ? vendas
+    : vendasAnoAtual.length
+      ? vendasAnoAtual
+      : vendas;
+
   const grupos = new Map();
 
-  vendas.forEach(venda => {
+  vendasEvolucao.forEach(venda => {
+
     const data = obterDataVenda(venda);
 
     if (!data) return;
@@ -595,20 +612,25 @@ if (containerScroll && containerGrafico) {
             font: {
               size: 10
             },
-            callback: function(valor) {
-              const indice = Math.round(Number(valor));
-              const periodo = periodos[indice];
 
-              if (!periodo) return "";
+callback: function(valor) {
+  const indice = Math.round(Number(valor));
+  const periodo = periodos[indice];
 
-              if (agrupamentoAtual === "mes") {
-                const [ano, mes] = periodo.chave.split("-");
+  if (!periodo) return "";
 
-                return mes === "01" ? ano : mes;
-              }
+  if (agrupamentoAtual === "mes") {
+    const [ano, mes] = periodo.chave.split("-");
+    return `${mes}/${ano}`;
+  }
 
-              return periodo.chave.slice(0, 4);
-            }
+  if (agrupamentoAtual === "semana") {
+    return formatarData(periodo.chave);
+  }
+
+  return formatarData(periodo.chave);
+}
+
           }
         },
         y: {
@@ -643,7 +665,7 @@ if (containerScroll && containerGrafico) {
   });
 }
 
-  const total = somarValores(vendas);
+ const total = somarValores(vendasEvolucao);
   const totalEvolucao = document.getElementById("totalEvolucao");
 
   if (totalEvolucao) {
@@ -2087,21 +2109,57 @@ function agruparFaturamentoPorAno(vendas) {
   return grupos;
 }
 
-function atualizarSeletoresAnuais() {
-  const anos = [...new Set(
-    todasVendas
-      .map(venda => obterDataVenda(venda))
-      .filter(Boolean)
-      .map(data => Number(data.slice(0, 4)))
-  )].sort((a, b) => b - a);
 
+function obterAnosComparacao() {
+  const anoAtual = new Date().getFullYear();
+  const inicio = filtrosAplicados.dataInicial;
+  const fim = filtrosAplicados.dataFinal;
+
+  if (inicio && fim) {
+    const anoInicial = Number(inicio.slice(0, 4));
+    const anoFinal = Number(fim.slice(0, 4));
+
+    return anoInicial === anoFinal
+      ? [anoFinal, anoFinal - 1]
+      : [anoFinal, anoInicial];
+  }
+
+  if (inicio || fim) {
+    const ano = Number((fim || inicio).slice(0, 4));
+    return [ano, ano - 1];
+  }
+
+  return [anoAtual, anoAtual - 1];
+}
+
+
+
+function atualizarSeletoresAnuais() {
   const anoBase = document.getElementById("anoComparacaoA");
   const anoComparado = document.getElementById("anoComparacaoB");
 
   if (!anoBase || !anoComparado) return;
 
-  const anteriorA = anoBase.value;
-  const anteriorB = anoComparado.value;
+  const [anoPadraoA, anoPadraoB] = obterAnosComparacao();
+
+  const anos = [...new Set([
+    anoPadraoA,
+    anoPadraoB,
+    ...todasVendas
+      .map(venda => obterDataVenda(venda))
+      .filter(Boolean)
+      .map(data => Number(data.slice(0, 4)))
+  ])].sort((a, b) => b - a);
+
+  const chaveFiltros = [
+    filtrosAplicados.dataInicial || "",
+    filtrosAplicados.dataFinal || ""
+  ].join("|");
+
+  const filtrosMudaram = anoBase.dataset.filtros !== chaveFiltros;
+
+  const anteriorA = Number(anoBase.value);
+  const anteriorB = Number(anoComparado.value);
 
   [anoBase, anoComparado].forEach(select => {
     select.replaceChildren();
@@ -2111,14 +2169,21 @@ function atualizarSeletoresAnuais() {
     });
   });
 
-  anoBase.value = anos.includes(Number(anteriorA))
-    ? anteriorA
-    : String(anos[0] || "");
+  anoBase.value = String(
+    !filtrosMudaram && anos.includes(anteriorA)
+      ? anteriorA
+      : anoPadraoA
+  );
 
-  anoComparado.value = anos.includes(Number(anteriorB))
-    ? anteriorB
-    : String(anos[1] || anos[0] || "");
+  anoComparado.value = String(
+    !filtrosMudaram && anos.includes(anteriorB)
+      ? anteriorB
+      : anoPadraoB
+  );
+
+  anoBase.dataset.filtros = chaveFiltros;
 }
+
 
 
 function preencherCrescimentoAnual() {
@@ -2286,7 +2351,15 @@ function preencherGraficoComparacaoAnual() {
   function obterValores(ano) {
     const valores = Array(12).fill(0);
 
-    vendasFiltradas.forEach(venda => {
+    
+const vendasComparacao = filtrarVendas(todasVendas, {
+  ...filtrosAplicados,
+  dataInicial: "",
+  dataFinal: ""
+});
+
+vendasComparacao.forEach(venda => {
+
       const data = obterDataVenda(venda);
       if (!data || Number(data.slice(0, 4)) !== ano) return;
 
@@ -2963,11 +3036,7 @@ $$("#controleAgrupamento .chart-segment").forEach(botao => {
       item.setAttribute("aria-pressed", String(ativo));
     });
 
-    preencherGraficoArea(vendasFiltradas);
-
-    if (graficos.evolucao) {
-      graficos.evolucao.update();
-    }
+preencherEvolucaoAvancada();
   });
 });
 

@@ -4,7 +4,7 @@
   --primary-dark: #235c7c;
   --primary-light: #e8f3f7;
   --secondary: #23394b;
-  --accent: #d6a665;
+  --accent: #397c9f;
   --background: #f1f4f6;
   --card-bg: #ffffff;
   --text-primary: #203143;
@@ -103,7 +103,7 @@ a {
   width: 43px;
   height: 43px;
   border-radius: 12px;
-  background: #d5a665;
+  background: var(--primary);
   color: #fff;
   font-size: 21px;
 }
@@ -196,12 +196,12 @@ a {
   left: 0;
   width: 3px;
   border-radius: 0 3px 3px 0;
-  background: var(--accent);
+  background: #fff;
   content: "";
 }
 
 .navigation-link.active > i:first-child {
-  color: var(--accent);
+  color: #fff;
 }
 
 .navigation-arrow {
@@ -278,7 +278,7 @@ a {
   align-items: center;
   justify-content: space-between;
   height: 72px;
-  padding: 0 clamp(20px, 3vw, 44px);
+  padding: 0 clamp(20px, 3vw, 30px);
   border-bottom: 1px solid var(--border);
   background: #fff;
 }
@@ -320,25 +320,6 @@ a {
   font-size: 15px;
 }
 
-.topbar-divider {
-  width: 1px;
-  height: 25px;
-  background: var(--border);
-}
-
-.topbar-avatar {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 35px;
-  height: 35px;
-  border: 1px solid #dce6ec;
-  border-radius: 10px;
-  background: #eaf1f5;
-  color: var(--primary-dark);
-  font-size: 17px;
-}
-
 .mobile-menu-button {
   display: none;
 }
@@ -346,7 +327,7 @@ a {
 .app-main {
   max-width: 1900px;
   margin: 0 auto;
-  padding: 35px clamp(20px, 3vw, 44px) 20px;
+  padding: 35px clamp(14px, 2vw, 30px) 20px;
 }
 
 .page-intro {
@@ -460,6 +441,10 @@ a {
   border: 1px solid var(--border);
   border-radius: var(--radius);
   background: var(--card-bg);
+}
+
+.records-section {
+  margin-top: 32px;
 }
 
 .sidebar-filtros.panel-hidden {
@@ -623,6 +608,10 @@ a {
 
 .conteudo-dashboard {
   min-width: 0;
+}
+
+.conteudo-dashboard > .dashboard-section:last-child {
+  margin-bottom: 0;
 }
 
 .section-heading {
@@ -1234,10 +1223,6 @@ a {
   white-space: nowrap;
 }
 
-.records-section {
-  margin-top: 5px;
-}
-
 .tabela {
   min-width: 0;
   overflow: hidden;
@@ -1721,8 +1706,8 @@ a {
   justify-content: space-between;
   gap: 15px;
   padding: 24px 27px;
-  background: var(--sidebar-bg);
-  color: #fff;
+  color: var(--primary);
+  border-bottom: 1px solid var(--border);
 }
 
 .modal-eyebrow {
@@ -1754,15 +1739,16 @@ a {
   justify-content: center;
   width: 34px;
   height: 34px;
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  border: 1px solid var(--primary);
   border-radius: 8px;
   background: rgba(255, 255, 255, 0.08);
-  color: #fff;
+  color: var(--primary);
   font-size: 15px;
 }
 
 .close-venda:hover {
-  background: rgba(255, 255, 255, 0.15);
+  background: var(--primary);
+  color: white;
 }
 
 #formVenda {
@@ -2936,10 +2922,6 @@ a {
   .app-topbar {
     height: 65px;
   }
-
-  .app-main {
-    padding-top: 27px;
-  }
 }
 
 @media (max-width: 700px) {
@@ -3089,7 +3071,7 @@ a {
   }
 
   .app-main {
-    padding: 23px 13px 15px;
+    padding: 23px 10px 15px;
   }
 
   .breadcrumb {

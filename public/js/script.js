@@ -1921,22 +1921,31 @@ function configurarNavegacao() {
   const secoes = links
     .map(link => {
       const seletor = link.getAttribute("href");
+      const elemento = document.getElementById(seletor.slice(1));
 
       return {
         link,
-        elemento: document.getElementById(seletor.slice(1))
+        elemento,
+        area: seletor === "#visao-geral"
+          ? document.querySelector(".metrics-section") || elemento
+          : elemento
       };
     })
     .filter(item => item.elemento);
 
   if (!secoes.length) return;
 
+  let secaoAtiva = secoes[0];
   let navegacaoPendente = null;
   let quadroPendente = false;
   let temporizadorNavegacao = null;
+  let ultimaPosicao = window.scrollY;
+  let direcao = "baixo";
 
   const definirAtivo = item => {
     if (!item) return;
+
+    secaoAtiva = item;
 
     links.forEach(link => {
       const ativo = link === item.link;
@@ -1957,56 +1966,47 @@ function configurarNavegacao() {
     }
   };
 
-  const obterLimiteRolagem = () => {
-    const documento = document.documentElement;
-
-    return Math.max(
-      0,
-      documento.scrollHeight - window.innerHeight
-    );
-  };
-
-  const obterPosicaoSecao = elemento => {
-    return elemento.getBoundingClientRect().top + window.scrollY;
-  };
-
   const obterSecaoAtual = () => {
-    const limite = obterLimiteRolagem();
-    const posicao = window.scrollY;
-    const margem = 120;
+    const alturaTela = window.innerHeight;
+    const areaAtual = secaoAtiva.area.getBoundingClientRect();
 
-    if (posicao >= limite - 4) {
-      return secoes[secoes.length - 1];
+    if (window.scrollY <= 0) {
+      return secoes[0];
     }
 
-    let atual = secoes[0];
-
-    for (const item of secoes) {
-      if (obterPosicaoSecao(item.elemento) <= posicao + margem) {
-        atual = item;
-      } else {
-        break;
-      }
+    if (areaAtual.bottom > 0 && areaAtual.top < alturaTela) {
+      return secaoAtiva;
     }
 
-    return atual;
+    const visiveis = secoes.filter(item => {
+      const area = item.area.getBoundingClientRect();
+
+      return area.bottom > 0 && area.top < alturaTela;
+    });
+
+    if (!visiveis.length) {
+      return secaoAtiva;
+    }
+
+    return direcao === "baixo"
+      ? visiveis[0]
+      : visiveis[visiveis.length - 1];
   };
 
   const atualizarNavegacao = () => {
     quadroPendente = false;
 
-    if (navegacaoPendente) {
-      const destino = Math.min(
-        obterPosicaoSecao(navegacaoPendente.elemento),
-        obterLimiteRolagem()
-      );
+    const posicaoAtual = window.scrollY;
 
-      if (Math.abs(window.scrollY - destino) <= 6) {
-        navegacaoPendente = null;
-      } else {
-        return;
-      }
+    if (posicaoAtual > ultimaPosicao) {
+      direcao = "baixo";
+    } else if (posicaoAtual < ultimaPosicao) {
+      direcao = "cima";
     }
+
+    ultimaPosicao = posicaoAtual;
+
+    if (navegacaoPendente) return;
 
     definirAtivo(obterSecaoAtual());
   };
@@ -2018,6 +2018,12 @@ function configurarNavegacao() {
     requestAnimationFrame(atualizarNavegacao);
   };
 
+  const liberarNavegacao = () => {
+    clearTimeout(temporizadorNavegacao);
+    navegacaoPendente = null;
+    solicitarAtualizacao();
+  };
+
   links.forEach(link => {
     link.addEventListener("click", () => {
       const item = secoes.find(secao => secao.link === link);
@@ -2025,19 +2031,34 @@ function configurarNavegacao() {
       if (!item) return;
 
       navegacaoPendente = item;
+
       definirAtivo(item);
       fecharMenuMobile();
 
       clearTimeout(temporizadorNavegacao);
 
-      temporizadorNavegacao = setTimeout(() => {
-        navegacaoPendente = null;
-        solicitarAtualizacao();
-      }, 1500);
+      temporizadorNavegacao = setTimeout(
+        liberarNavegacao,
+        1500
+      );
     });
   });
 
   window.addEventListener("scroll", solicitarAtualizacao, {
+    passive: true
+  });
+
+  window.addEventListener("scrollend", () => {
+    if (navegacaoPendente) {
+      liberarNavegacao();
+    }
+  });
+
+  window.addEventListener("wheel", liberarNavegacao, {
+    passive: true
+  });
+
+  window.addEventListener("touchstart", liberarNavegacao, {
     passive: true
   });
 
@@ -2049,7 +2070,6 @@ function configurarNavegacao() {
 
   solicitarAtualizacao();
 }
-
 
 const inteligenciaComercial = {
   intervaloGrafico: "todos",

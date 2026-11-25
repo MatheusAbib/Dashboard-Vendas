@@ -282,11 +282,22 @@ function atualizarFiltrosAtivos() {
     botao.title = `Remover filtro ${rotulo}`;
     botao.append(texto, icone);
 
-    botao.addEventListener("click", async () => {
-      document.getElementById(id).value = "";
-      filtrosAplicados[chave] = "";
-      await atualizarDashboardFiltrado();
-    });
+botao.addEventListener("click", async () => {
+  document.getElementById(id).value = "";
+
+  if (chave === "pais") {
+    $("#filtro-estado").value = "";
+    $("#filtro-cidade").value = "";
+  }
+
+  if (chave === "estado") {
+    $("#filtro-cidade").value = "";
+  }
+
+  preencherFiltrosGeograficos(todasVendas);
+
+  await aplicarTodosFiltros();
+});
 
     lista.append(botao);
   });
@@ -1311,6 +1322,18 @@ async function limparTodosFiltros() {
   ].forEach(id => {
     document.getElementById(id).value = "";
   });
+
+  const aviso = document.getElementById("avisoPeriodoPersonalizado");
+
+  if (aviso) {
+    aviso.hidden = true;
+  }
+
+  const periodoRapido = document.getElementById("periodoRapido");
+
+  if (periodoRapido) {
+    periodoRapido.value = "todos";
+  }
 
   filtrosAplicados = {};
 
@@ -2597,25 +2620,39 @@ function atualizarSugestoesCadastro() {
   });
 }
 
-function aplicarPeriodoRapido() {
+async function aplicarPeriodoRapido() {
   const seletor = document.getElementById("periodoRapido");
   const inicial = document.getElementById("data-inicial");
   const final = document.getElementById("data-final");
 
+  
+
   if (!seletor || !inicial || !final) return;
 
-  const opcao = seletor.value;
+    const opcao = seletor.value;
+    const aviso = document.getElementById("avisoPeriodoPersonalizado");
 
-  if (opcao === "personalizado") return;
+    if (aviso) {
+      aviso.hidden = opcao !== "personalizado";
+    }
+
+    if (opcao === "personalizado") return;
 
   if (opcao === "todos") {
     inicial.value = "";
     final.value = "";
+
+    await aplicarTodosFiltros();
     return;
   }
 
   const agora = new Date();
-  const hoje = new Date(agora.getFullYear(), agora.getMonth(), agora.getDate());
+  const hoje = new Date(
+    agora.getFullYear(),
+    agora.getMonth(),
+    agora.getDate()
+  );
+
   const inicio = new Date(hoje);
   const fim = new Date(hoje);
 
@@ -2636,6 +2673,8 @@ function aplicarPeriodoRapido() {
 
   inicial.value = formatarLocal(inicio);
   final.value = formatarLocal(fim);
+
+  await aplicarTodosFiltros();
 }
 
 function obterDataLocalAtual() {
@@ -2984,16 +3023,30 @@ function configurarEventos() {
     }
   });
 
-  $("#filtro-pais").addEventListener("change", () => {
-    $("#filtro-estado").value = "";
-    $("#filtro-cidade").value = "";
-    preencherFiltrosGeograficos(todasVendas);
-  });
+$("#filtro-pais").addEventListener("change", () => {
+  $("#filtro-estado").value = "";
+  $("#filtro-cidade").value = "";
+  preencherFiltrosGeograficos(todasVendas);
+  aplicarTodosFiltros();
+});
 
-  $("#filtro-estado").addEventListener("change", () => {
-    $("#filtro-cidade").value = "";
-    preencherFiltrosGeograficos(todasVendas);
-  });
+$("#filtro-estado").addEventListener("change", () => {
+  $("#filtro-cidade").value = "";
+  preencherFiltrosGeograficos(todasVendas);
+  aplicarTodosFiltros();
+});
+
+[
+  "data-inicial",
+  "data-final",
+  "categoria",
+  "filtro-cidade"
+].forEach(id => {
+  document.getElementById(id).addEventListener(
+    "change",
+    aplicarTodosFiltros
+  );
+});
 
   $("#limparFiltrosAtivos").addEventListener("click", limparTodosFiltros);
 

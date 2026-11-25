@@ -568,10 +568,35 @@ a {
   font-size: 11px;
 }
 
+.aviso-periodo {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 6px 0 0;
+  font-size: 0.72rem;
+  line-height: 1.4;
+  color: #397c9f;
+}
+
+.aviso-periodo i {
+  flex-shrink: 0;
+  font-size: 0.8rem;
+}
+
+.aviso-periodo[hidden] {
+  display: none;
+}
+
+.botoes-filtro .btn-filtro {
+  width: 100%;
+}
+
 .botoes-filtro {
   display: flex;
   flex-direction: column;
   gap: 8px;
+   grid-template-columns: 1fr;
+  width: 100%;
   padding-top: 17px;
   border-top: 1px solid var(--border);
 }

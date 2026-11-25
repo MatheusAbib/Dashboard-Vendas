@@ -167,6 +167,10 @@
                   <option value="ano-anterior">Ano anterior</option>
                   <option value="personalizado">Personalizado</option>
                 </select>
+                <p id="avisoPeriodoPersonalizado" class="aviso-periodo" hidden>
+                    <i class="bi bi-info-circle"></i>
+                    Escolha a data inicial e final.
+                  </p>
               </div>
 
               <div class="filtro-group">
@@ -215,10 +219,6 @@
               </div>
 
               <div class="botoes-filtro">
-                <button type="button" class="btn-filtro" onclick="aplicarTodosFiltros()">
-                  <i class="bi bi-check2"></i>
-                  Aplicar filtros
-                </button>
                 <button type="button" class="btn-filtro btn-secundario" onclick="limparTodosFiltros()">
                   <i class="bi bi-arrow-counterclockwise"></i>
                   Limpar filtros

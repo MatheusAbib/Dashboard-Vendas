@@ -769,7 +769,7 @@ a {
 }
 
 .card:nth-child(1)::after {
-  background: var(--accent);
+  background: white;
 }
 
 .card:nth-child(2)::after {
@@ -799,7 +799,7 @@ a {
 
 .card:nth-child(1) .card-icon {
   background: rgba(255, 255, 255, 0.11);
-  color: var(--accent);
+  color: white;
 }
 
 .card-info {

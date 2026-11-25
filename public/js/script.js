@@ -1,7 +1,7 @@
-const API_URL = '/.netlify/functions/api';
+// const API_URL = '/.netlify/functions/api';
 
 //local
-// const API_URL = "/api/vendas";
+const API_URL = "/api/vendas";
 
 const CORES = {
   primaria: "#397c9f",

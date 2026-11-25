@@ -47,6 +47,7 @@ let paginaAtual = 1;
 let itensPorPagina = 10;
 let agrupamentoAtual = "dia";
 let vendaParaExcluir = null;
+let vendaVisualizada = null;
 let mapaLeaflet = null;
 let marcadoresMapa = null;
 let carregandoDashboard = false;
@@ -1112,7 +1113,6 @@ function preencherTabela(vendas) {
       formatarValor(venda.valor),
       venda.cidade || "—",
       venda.estado || "—",
-      formatarCEP(venda.cep),
       formatarData(venda.dataVenda)
     ];
 
@@ -1132,7 +1132,7 @@ function preencherTabela(vendas) {
     const grupo = criarElemento("div", "table-actions");
 
     grupo.append(
-      criarBotaoAcao("bi-pencil-square", "Editar venda", "editar", () => abrirFormVenda(venda)),
+      criarBotaoAcao("bi-eye", "Ver venda", "visualizar", () => visualizarVenda(venda)),
       criarBotaoAcao("bi-trash3", "Excluir venda", "excluir", () =>
         confirmarExclusao(venda.id, venda.produto)
       )
@@ -1465,11 +1465,18 @@ function abrirFormVenda(venda = null) {
 function fecharFormVenda() {
   $("#formVendaModal").style.display = "none";
   $("#formVenda").reset();
+
+  configurarModoVisualizacao(false);
+
+  vendaVisualizada = null;
+
   document.body.style.overflow = "";
 }
 
 async function salvarVenda(evento) {
   evento.preventDefault();
+
+  if ($("#formVendaModal").classList.contains("modo-visualizacao")) return;
 
   const formulario = $("#formVenda");
 
@@ -1667,7 +1674,6 @@ function obterLinhasExportacao(vendas) {
     venda.cidade || "",
     venda.estado || "",
     venda.pais || "",
-    formatarCEP(venda.cep),
     formatarData(venda.dataVenda)
   ]);
 }
@@ -1827,7 +1833,6 @@ function exportarPDF() {
         venda.cidade || "—",
         venda.estado || "—",
         venda.pais || "—",
-        formatarCEP(venda.cep),
         formatarData(venda.dataVenda)
       ]),
       theme: "grid",
@@ -2962,11 +2967,84 @@ atualizarDashboardFiltrado = async function() {
   atualizarInteligenciaComercial();
 };
 
+function configurarModoVisualizacao(visualizacao) {
+  const formulario = $("#formVenda");
+  const modal = $("#formVendaModal");
+
+  modal.classList.toggle("modo-visualizacao", visualizacao);
+
+  formulario.querySelectorAll("input:not([type='hidden']), textarea").forEach(campo => {
+    campo.readOnly = visualizacao;
+  });
+
+  formulario.querySelectorAll("select").forEach(campo => {
+    campo.disabled = visualizacao;
+  });
+
+  $("#salvarVenda").hidden = visualizacao;
+  $("#btnEditarVenda").hidden = !visualizacao;
+
+  $("#btnCancelarVenda").innerHTML = visualizacao
+    ? '<i class="bi bi-x-lg"></i> Fechar'
+    : '<i class="bi bi-x-lg"></i> Cancelar';
+}
+
+function visualizarVenda(venda) {
+  abrirFormVenda(venda);
+
+  vendaVisualizada = venda;
+
+  configurarModoVisualizacao(true);
+
+  $("#formTitulo").textContent = "Visualizar Venda";
+
+  const icone = $("#formVendaModal .modal-header-venda h2 i");
+
+  if (icone) {
+    icone.className = "bi bi-eye";
+  }
+
+  requestAnimationFrame(() => $("#btnEditarVenda").focus());
+}
+
+function editarVendaVisualizada() {
+  if (!vendaVisualizada) return;
+
+  const venda = vendaVisualizada;
+
+  abrirFormVenda(venda);
+
+  vendaVisualizada = venda;
+}
+
+function cancelarEdicaoVenda() {
+  const visualizacao = $("#formVendaModal").classList.contains("modo-visualizacao");
+
+  if (!visualizacao && vendaVisualizada) {
+    visualizarVenda(vendaVisualizada);
+    return;
+  }
+
+  fecharFormVenda();
+}
+
 const abrirFormVendaOriginal = abrirFormVenda;
 
 abrirFormVenda = function(venda = null) {
+  configurarModoVisualizacao(false);
+
+  vendaVisualizada = null;
+
   abrirFormVendaOriginal(venda);
   configurarDataCadastro();
+
+  const icone = $("#formVendaModal .modal-header-venda h2 i");
+
+  if (icone) {
+    icone.className = venda
+      ? "bi bi-pencil-square"
+      : "bi bi-cart-plus";
+  }
 };
 
 const obterVendasPesquisadasOriginal = obterVendasPesquisadas;

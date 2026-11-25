@@ -697,8 +697,7 @@
                 </article>
               </div>
             </section>
-          </div>
-        </div>
+   
 
         <section id="registros" class="dashboard-section records-section">
           <div class="section-heading">
@@ -736,12 +735,7 @@
                 </button>
               </div>
               <div class="table-toolbar-actions">
-                <div class="table-select-wrapper">
-                  <i class="bi bi-funnel"></i>
-                  <select id="filtroCategoriaTabela" aria-label="Filtrar categoria da tabela">
-                    <option value="">Todas as categorias</option>
-                  </select>
-                </div>
+
                 <div class="table-select-wrapper">
                   <i class="bi bi-sort-down"></i>
                   <select id="ordenacaoVendas" aria-label="Ordenar vendas">
@@ -778,7 +772,6 @@
                     <th scope="col">Valor</th>
                     <th scope="col">Cidade</th>
                     <th scope="col">Estado</th>
-                    <th scope="col">CEP</th>
                     <th scope="col">Data</th>
                     <th scope="col">Ações</th>
                   </tr>
@@ -814,6 +807,8 @@
             </div>
           </div>
         </section>
+               </div>
+        </div>
 
         <footer class="app-footer">
           <span>
@@ -935,15 +930,21 @@
         <div class="form-validation-message" id="mensagemValidacaoVenda" role="alert" hidden></div>
 
         <div class="form-actions">
-          <button type="button" class="btn-cancelar" onclick="fecharFormVenda()">
-            <i class="bi bi-x-lg"></i>
-            Cancelar
-          </button>
-          <button type="submit" class="btn-salvar" id="salvarVenda">
-            <i class="bi bi-check-lg"></i>
-            Salvar venda
-          </button>
-        </div>
+  <button type="button" class="btn-cancelar" id="btnCancelarVenda" onclick="cancelarEdicaoVenda()">
+    <i class="bi bi-x-lg"></i>
+    Cancelar
+  </button>
+
+  <button type="button" class="btn-salvar" id="btnEditarVenda" onclick="editarVendaVisualizada()" hidden>
+    <i class="bi bi-pencil-square"></i>
+    Editar venda
+  </button>
+
+  <button type="submit" class="btn-salvar" id="salvarVenda">
+    <i class="bi bi-check-lg"></i>
+    Salvar venda
+  </button>
+</div>
       </form>
     </div>
   </div>

@@ -635,10 +635,6 @@ a {
   min-width: 0;
 }
 
-.conteudo-dashboard > .dashboard-section:last-child {
-  margin-bottom: 0;
-}
-
 .section-heading {
   display: flex;
   align-items: flex-end;
@@ -1731,14 +1727,13 @@ a {
   justify-content: space-between;
   gap: 15px;
   padding: 24px 27px;
-  color: var(--primary);
+  color: var(--primary-dark);
   border-bottom: 1px solid var(--border);
 }
 
 .modal-eyebrow {
   display: block;
   margin-bottom: 7px;
-  color: var(--accent);
   font-size: 9px;
   font-weight: 800;
   letter-spacing: 1.5px;
@@ -1753,10 +1748,6 @@ a {
   font-weight: 800;
 }
 
-.modal-header-venda h2 i {
-  color: var(--accent);
-}
-
 .close-venda {
   display: flex;
   flex-shrink: 0;
@@ -1764,16 +1755,17 @@ a {
   justify-content: center;
   width: 34px;
   height: 34px;
-  border: 1px solid var(--primary);
+    border: 1px solid var(--primary-dark);
   border-radius: 8px;
-  background: rgba(255, 255, 255, 0.08);
-  color: var(--primary);
+  background: var(--primary-dark);
+  color: white;
   font-size: 15px;
 }
 
 .close-venda:hover {
   background: var(--primary);
-  color: white;
+    border: 1px solid var(--primary);
+
 }
 
 #formVenda {
@@ -3096,7 +3088,7 @@ a {
   }
 
   .app-main {
-    padding: 23px 10px 15px;
+    padding: 23px 8px 15px;
   }
 
   .breadcrumb {
@@ -3358,4 +3350,37 @@ a {
     max-height: none;
     overflow: visible;
   }
+}
+
+.btn-acao.visualizar {
+  color: #397c9f;
+}
+
+.btn-acao.visualizar:hover {
+  color: #235c7c;
+  background: rgba(57, 124, 159, 0.1);
+}
+
+.modo-visualizacao .form-group-venda input,
+.modo-visualizacao .form-group-venda select,
+.modo-visualizacao .form-group-venda textarea {
+  background-color: #f5f7f9;
+  cursor: default;
+  opacity: 1;
+  -webkit-text-fill-color: currentColor;
+}
+
+.modo-visualizacao .form-group-venda input:focus,
+.modo-visualizacao .form-group-venda select:focus,
+.modo-visualizacao .form-group-venda textarea:focus {
+  box-shadow: none;
+  outline: none;
+}
+
+.modo-visualizacao .form-group-venda select {
+  appearance: none;
+}
+
+#formVenda .form-actions [hidden] {
+  display: none;
 }
